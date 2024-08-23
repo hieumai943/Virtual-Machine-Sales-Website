@@ -1,8 +1,8 @@
 package kltn.virtualmachinesales.website.security;
 
 
-import com.social.socialapi.security.jwt.JwtAuthenticationEntryPoint;
-import com.social.socialapi.security.jwt.JwtRequestFilter;
+import kltn.virtualmachinesales.website.security.jwt.JwtAuthenticationEntryPoint;
+import kltn.virtualmachinesales.website.security.jwt.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,8 +1,8 @@
 package kltn.virtualmachinesales.website.security;
 
 
-import com.social.socialapi.entity.user.User;
-import com.social.socialapi.repository.UserRepository;
+import kltn.virtualmachinesales.website.entity.user.User;
+import kltn.virtualmachinesales.website.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

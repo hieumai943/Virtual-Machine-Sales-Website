@@ -1,6 +1,14 @@
 package kltn.virtualmachinesales.website.entity.user;
 
 
+import jakarta.persistence.*;
+import kltn.virtualmachinesales.website.dto.response.UserViewDTO;
+import kltn.virtualmachinesales.website.entity.enums.EmailStatus;
+import kltn.virtualmachinesales.website.entity.enums.Gender;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.Date;
 
 @Entity
@@ -9,7 +17,6 @@ import java.util.Date;
 @NoArgsConstructor
 @Table(name = "users")
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -69,6 +76,7 @@ public class User {
         this.createdAt = new Date();
         emailStatus = EmailStatus.Unverified;
     }
+
 
 
     @Override
