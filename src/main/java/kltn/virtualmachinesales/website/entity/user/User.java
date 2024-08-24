@@ -74,6 +74,7 @@ public class User {
         this.email = email;
         this.username = username;
         this.createdAt = new Date();
+
         emailStatus = EmailStatus.Unverified;
     }
 
