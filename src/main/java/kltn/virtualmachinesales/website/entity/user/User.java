@@ -38,10 +38,8 @@ public class User {
 
     private String profile_pic_url;
 
-    private Date createdAt;
-
-    @Enumerated(EnumType.STRING)
-    private EmailStatus emailStatus;
+//    @Enumerated(EnumType.STRING)
+//    private EmailStatus emailStatus;
 
     public User(String firstName, String lastName, Gender gender, String email, String username, String password, String bio, String profile_pic_url) {
         this.firstName = firstName;
@@ -52,8 +50,6 @@ public class User {
         this.password = password;
         this.bio = bio;
         this.profile_pic_url = profile_pic_url;
-        this.createdAt = new Date();
-        emailStatus = EmailStatus.Unverified;
     }
 
     public User(String firstName, String lastName, Gender gender, String email, String username, String password) {
@@ -63,8 +59,6 @@ public class User {
         this.email = email;
         this.username = username;
         this.password = password;
-        this.createdAt = new Date();
-        emailStatus = EmailStatus.Unverified;
     }
 
     public User(String firstName, String lastName, Gender gender, String email, String username) {
@@ -73,9 +67,6 @@ public class User {
         this.gender = gender;
         this.email = email;
         this.username = username;
-        this.createdAt = new Date();
-
-        emailStatus = EmailStatus.Unverified;
     }
 
 

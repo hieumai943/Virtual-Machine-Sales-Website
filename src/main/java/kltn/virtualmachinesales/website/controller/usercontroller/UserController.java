@@ -32,7 +32,10 @@ public class UserController {
     UserService userService;
 
 
-
+    @GetMapping("/ping")
+    public String Ping(){
+        return "pong";
+    }
 
     @PostMapping("/login")
     public ResponseEntity<Object> createAuthenticationToken(@RequestBody UserLoginDTO request) throws Exception {
