@@ -51,6 +51,20 @@ public class UserController {
         return ResponseHandler.generateAuthenticationResponse(userViewDTO, token);
     }
 
+    @PostMapping("/login-xpra")
+    public ResponseEntity<Object> createAuthenticationTokenXpra(@RequestBody UserLoginDTO request) throws Exception {
+
+        userService.authenticate(request.getEmail(), request.getPassword());
+
+        final UserDetails userDetails = userDetailsService
+                .loadUserByUsername(request.getEmail());
+
+        UserViewDTO userViewDTO = userService.getUserDTOByEmail(request.getEmail());
+        String token = jwtUntil.generateToken(userDetails);
+
+        return ResponseHandler.generateAuthenticationResponse(userViewDTO, token);
+    }
+
     @PostMapping("/register")
     public ResponseEntity<Object> registerUserAccount(@RequestBody UserCreationDTO userCreationDTO) throws UsernameExistException, EmailExistException {
         return ResponseEntity.ok(userService.register(userCreationDTO));
