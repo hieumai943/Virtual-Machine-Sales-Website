@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 @RestController
 public class NginxAuthController {
@@ -17,33 +18,40 @@ public class NginxAuthController {
     @Value("${nginx.htpasswd.path}")
     private String htpasswdPath;
 
+    @Value("${passwordUbuntu}")
+    private String passwordUbuntu;
+
     @PostMapping("/change-auth")
     public String changeAuth(@RequestBody AuthRequest request) {
-        //            String command = String.format("htpasswd -c %s %s %s",
-//                    htpasswdPath, request.getUsername(), request.getPassword());
         StringBuilder output = new StringBuilder();
-        String command = "cd /home/hieunm369/Documents/kltn/XPRA_/app/ubuntu/nginx";
-        String changePassCommand = "sudo htpasswd -b .htpasswd hieumai943 123456";
+        List<String> commands = List.of(
+                "cd /home/hieunm369/Documents/kltn/XPRA_/app/ubuntu/nginx",
+                "echo '"+ passwordUbuntu +"' | sudo -S htpasswd -b .htpasswd " + request.getUsername() + " " + request.getPassword()
+        );
+
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
             if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-                processBuilder.command("cmd.exe", "/c", command);
+                processBuilder.command("cmd.exe", "/c", String.join(" && ", commands));
             } else {
-                processBuilder.command("bash", "-c", command);
+                processBuilder.command("bash", "-c", String.join(" && ", commands));
             }
-
             Process process = processBuilder.start();
-            process = Runtime.getRuntime().exec(changePassCommand);
+            // Đọc output tiêu chuẩn
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
             String line;
             while ((line = reader.readLine()) != null) {
-                output.append(line).append("\n");
+                output.append("stdout: ").append(line).append("\n");
+            }
+
+            // Đọc lỗi tiêu chuẩn
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            while ((line = errorReader.readLine()) != null) {
+                output.append("stderr: ").append(line).append("\n");
             }
 
             int exitCode = process.waitFor();
             output.append("Exited with error code : ").append(exitCode);
-
         } catch (Exception e) {
             output.append("Error executing command: ").append(e.getMessage());
         }
