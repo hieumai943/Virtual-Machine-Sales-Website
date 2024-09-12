@@ -12,5 +12,8 @@ public class Machine {
     private long id;
     private String name;
     private String description;
-
+    private String ram;
+    @Column(name="core_cpu")
+    private String coreCpu;
+    private String memory;
 }

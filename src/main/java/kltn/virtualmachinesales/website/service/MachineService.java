@@ -6,7 +6,9 @@ import kltn.virtualmachinesales.website.entity.Machine;
 
 public interface MachineService {
 
-    Machine getById(long id) ;
+    Machine getById(Integer id) ;
     MachineDTO createMachine(MachineDTO machineDTO);
+    void deleteById(Integer id);
+    Machine buyMachine(Integer id);
     MachineDTO testMachine(MachineDTO machineDTO);
 }
