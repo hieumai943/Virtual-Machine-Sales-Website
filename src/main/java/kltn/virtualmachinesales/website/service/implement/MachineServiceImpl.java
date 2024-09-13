@@ -40,8 +40,4 @@ public class MachineServiceImpl implements MachineService {
         return machineDTO1;
     }
 
-    public Machine buyMachine(Integer id){
-
-    }
-
 }

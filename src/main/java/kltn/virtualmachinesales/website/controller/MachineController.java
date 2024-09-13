@@ -34,11 +34,11 @@ public class MachineController {
     }
 
     // API mua don hang do
-    @PostMapping("machine/{id}")
-    public ResponseEntity<DefaultResponse<Machine>> buyMachine(@PathVariable Integer id) {
-        Machine machine = machineService.buyMachine(id);
-        return DefaultResponse.success("Đã bán thành công", machine);
-    }
+//    @PostMapping("machine/{id}")
+//    public ResponseEntity<DefaultResponse<Machine>> buyMachine(@PathVariable Integer id) {
+//        Machine machine = machineService.buyMachine(id);
+//        return DefaultResponse.success("Đã bán thành công", machine);
+//    }
 
     @PostMapping("/test-machine")
     public ResponseEntity<DefaultResponse<MachineDTO>> test(@RequestBody MachineDTO machineDTO ) {
