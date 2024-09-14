@@ -17,6 +17,7 @@ public class MachineController {
     private MachineService machineService;
 
     @PostMapping("/machine/create")
+    @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity<DefaultResponse<MachineDTO>> create(@RequestBody MachineDTO machineDTO ) {
         MachineDTO machineDTO1 =  machineService.createMachine(machineDTO);
         return DefaultResponse.success("Group đã được tạo thành công", machineDTO1);
