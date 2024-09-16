@@ -16,4 +16,8 @@ public class Machine {
     @Column(name="core_cpu")
     private String coreCpu;
     private String memory;
+    @Column(name="img_src")
+    private String imgSrc;
+    @Column(name="is_Sample")
+    private Boolean isSample;
 }

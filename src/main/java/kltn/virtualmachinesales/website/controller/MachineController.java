@@ -3,6 +3,7 @@ package kltn.virtualmachinesales.website.controller;
 
 import kltn.virtualmachinesales.website.dto.MachineDTO;
 import kltn.virtualmachinesales.website.entity.Machine;
+import kltn.virtualmachinesales.website.http.DefaultListResponse;
 import kltn.virtualmachinesales.website.http.DefaultResponse;
 import kltn.virtualmachinesales.website.service.MachineService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,13 +12,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.crypto.Mac;
+import java.util.List;
+
 @Controller
+@CrossOrigin(origins = "http://localhost:3000")
 public class MachineController {
     @Autowired
     private MachineService machineService;
 
     @PostMapping("/machine/create")
-    @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity<DefaultResponse<MachineDTO>> create(@RequestBody MachineDTO machineDTO ) {
         MachineDTO machineDTO1 =  machineService.createMachine(machineDTO);
         return DefaultResponse.success("Group đã được tạo thành công", machineDTO1);
@@ -33,7 +37,11 @@ public class MachineController {
         machineService.deleteById(id);
         return DefaultResponse.success("đã xóa thành công ", null);
     }
-
+    @GetMapping("/machine/list")
+    public ResponseEntity<DefaultListResponse<Machine>> getAllMachine(){
+        List<Machine> machines = machineService.getAll();
+        return DefaultListResponse.success(machines, machines.stream().count());
+    }
     // API mua don hang do
 //    @PostMapping("machine/{id}")
 //    public ResponseEntity<DefaultResponse<Machine>> buyMachine(@PathVariable Integer id) {

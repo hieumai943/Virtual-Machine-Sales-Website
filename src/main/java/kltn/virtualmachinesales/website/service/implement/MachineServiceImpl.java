@@ -7,6 +7,8 @@ import kltn.virtualmachinesales.website.service.MachineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class MachineServiceImpl implements MachineService {
 
@@ -24,8 +26,14 @@ public class MachineServiceImpl implements MachineService {
         machine.setRam(machineDTO.getRam());
         machine.setCoreCpu(machineDTO.getCoreCpu());
         machine.setMemory(machineDTO.getMemory());
+        machine.setImgSrc(machineDTO.getImgSrc());
+        machine.setIsSample(machineDTO.getIsSample());
         machineRepository.save(machine);
         return machineDTO;
+    }
+    public List<Machine> getAll(){
+        List<Machine> machines = machineRepository.findAll();
+        return machines;
     }
     public void deleteById(Integer id){
         machineRepository.deleteById(id);

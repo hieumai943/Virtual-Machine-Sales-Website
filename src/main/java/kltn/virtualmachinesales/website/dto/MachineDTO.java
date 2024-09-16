@@ -13,4 +13,6 @@ public class MachineDTO {
     private String ram;
     private String coreCpu;
     private String memory;
+    private String imgSrc;
+    private Boolean isSample;
 }
