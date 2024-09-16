@@ -28,6 +28,9 @@ public class MachineServiceImpl implements MachineService {
         machine.setMemory(machineDTO.getMemory());
         machine.setImgSrc(machineDTO.getImgSrc());
         machine.setIsSample(machineDTO.getIsSample());
+        machine.setOldPrice(machineDTO.getOldPrice());
+        machine.setNewPrice(machineDTO.getOldPrice());
+
         machineRepository.save(machine);
         return machineDTO;
     }

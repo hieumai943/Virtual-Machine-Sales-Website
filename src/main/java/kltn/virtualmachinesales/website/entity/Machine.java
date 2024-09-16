@@ -20,4 +20,8 @@ public class Machine {
     private String imgSrc;
     @Column(name="is_Sample")
     private Boolean isSample;
+    @Column(name="old_price")
+    private String oldPrice;
+    @Column(name="new_price")
+    private String newPrice;
 }

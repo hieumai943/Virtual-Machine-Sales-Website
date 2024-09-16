@@ -15,4 +15,6 @@ public class MachineDTO {
     private String memory;
     private String imgSrc;
     private Boolean isSample;
+    private String oldPrice;
+    private String newPrice;
 }
