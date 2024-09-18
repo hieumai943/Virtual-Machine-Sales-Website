@@ -29,8 +29,9 @@ public class MachineServiceImpl implements MachineService {
         machine.setImgSrc(machineDTO.getImgSrc());
         machine.setIsSample(Boolean.FALSE);
         machine.setOldPrice(machineDTO.getOldPrice());
-        machine.setNewPrice(machineDTO.getOldPrice());
-
+        Double newPrice = Integer.valueOf(machine.getCoreCpu()) *5 + Integer.valueOf(machine.getRam()) + Integer.valueOf(machine.getMemory())*0.1;
+        machine.setNewPrice(newPrice.toString() + '$');
+        machine.setImgSrc("https://res.cloudinary.com/dlggnttqv/image/upload/v1726463019/machine_1_fgtptn.png");
         machineRepository.save(machine);
         return machineDTO;
     }
