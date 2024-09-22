@@ -26,4 +26,6 @@ public interface UserService {
 //    int getUserIdByUserDetails(UserDetails userDetails);
 
 //    List<UserViewDTO> listAllUserExceptMe(int userId);
+
+    Boolean verifyUser(String gmail, String verifyCode);
 }

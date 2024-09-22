@@ -6,6 +6,7 @@ import kltn.virtualmachinesales.website.entity.user.User;
 import kltn.virtualmachinesales.website.exceptions.EmailExistException;
 import kltn.virtualmachinesales.website.exceptions.UsernameExistException;
 import kltn.virtualmachinesales.website.repository.UserRepository;
+import kltn.virtualmachinesales.website.service.RedisService;
 import kltn.virtualmachinesales.website.service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,6 +29,7 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private RedisService redisService;
 
     public UserServiceImpl(UserRepository userRepository, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -126,6 +128,14 @@ public class UserServiceImpl implements UserService {
 //        return userViewDTOList;
 //
 //    }
-
+    @Override
+    public Boolean verifyUser(String gmail, String verifyCode){
+        if(redisService.find(gmail) != null){
+            if(redisService.find(gmail).toString().equals(verifyCode)){
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

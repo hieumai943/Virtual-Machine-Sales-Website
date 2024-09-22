@@ -6,6 +6,7 @@ import kltn.virtualmachinesales.website.dto.response.UserViewDTO;
 import kltn.virtualmachinesales.website.exceptions.EmailExistException;
 import kltn.virtualmachinesales.website.exceptions.UsernameExistException;
 import kltn.virtualmachinesales.website.security.jwt.JwtUntil;
+import kltn.virtualmachinesales.website.service.RedisService;
 import kltn.virtualmachinesales.website.service.UserService;
 import kltn.virtualmachinesales.website.util.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,8 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    RedisService redisService;
 
     @GetMapping("/ping")
     public String Ping(){
@@ -68,6 +71,12 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<Object> registerUserAccount(@RequestBody UserCreationDTO userCreationDTO) throws UsernameExistException, EmailExistException {
         return ResponseEntity.ok(userService.register(userCreationDTO));
+    }
+    @PostMapping("/verify")
+    public ResponseEntity<Boolean> verifyUser(@RequestParam String gmail, @RequestParam String verifyCode){
+
+       return ResponseEntity.ok(userService.verifyUser(gmail, verifyCode));
+
     }
 
 }

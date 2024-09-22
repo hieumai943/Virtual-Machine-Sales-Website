@@ -1,0 +1,8 @@
+#spring:
+#  kafka:
+#    consumer:
+#      auto-offset-reset: earliest
+#      enable-auto-commit: false
+#      max-poll-records: 1
+#    listener:
+#      ack-mode: MANUAL_IMMEDIATE
