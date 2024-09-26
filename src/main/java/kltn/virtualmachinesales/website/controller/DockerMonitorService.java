@@ -113,6 +113,7 @@ public class DockerMonitorService {
 //                }
 //            });
             // Đọc output tiêu chuẩn
+
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
