@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.mysql.cj.conf.PropertyKey.logger;
 
@@ -66,67 +68,48 @@ public class DockerMonitorService {
 
 //    @Scheduled(fixedRate = 50000)  // Kiểm tra mỗi 5 giây
     public void monitorContainer() {
+        String containerName = "hieuxfce2";
+
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
-            String command = "echo '"+passwordUbuntu +"' | sudo docker stats hieuxfce2";
-            if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-                processBuilder.command("cmd.exe", "/c", command);
-            } else {
-                processBuilder.command("bash", "-c", command);
-            }
-            Process process = processBuilder.start();
-            StringBuilder output = new StringBuilder();
+            String command = String.format("echo '%s' | sudo -S docker stats %s --no-stream --format \"{{.MemUsage}},{{.CPUPerc}}\"",
+                    passwordUbuntu, containerName);
 
-//            InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerName).exec();
-//            dockerClient.statsCmd(containerName).exec(new ResultCallback<Statistics>() {
-//                @Override
-//                public void onStart(Closeable closeable) {
-//                }
-//
-//                @Override
-//                public void onNext(Statistics statistics) {
-//                    long usedMemory = statistics.getMemoryStats().getUsage();
-//                    double usedCpu = calculateCpuUsage(statistics);
-//
-//                    if (usedMemory > memoryLimit || usedCpu > cpuLimit) {
-//                        showWarning(usedMemory, usedCpu);
-//                    }
-//
-//                    try {
-//                        close();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-//                @Override
-//                public void onError(Throwable throwable) {
-//                    throwable.printStackTrace();
-//                }
-//
-//                @Override
-//                public void onComplete() {
-//                }
-//
-//                @Override
-//                public void close() throws IOException {
-//                }
-//            });
-            // Đọc output tiêu chuẩn
+            processBuilder.command("bash", "-c", command);
+            Process process = processBuilder.start();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
+            List<String> output = new ArrayList<>();
+
             while ((line = reader.readLine()) != null) {
-                output.append("stdout: ").append(line).append("\n");
+                output.add(line);
             }
 
-            // Đọc lỗi tiêu chuẩn
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            while ((line = errorReader.readLine()) != null) {
-                output.append("stderr: ").append(line).append("\n");
-            }
             int exitCode = process.waitFor();
-            output.append("Exited with error code : ").append(exitCode);
+
+            if (exitCode == 0 && !output.isEmpty()) {
+                String[] stats = output.get(0).split(",");
+                if (stats.length == 2) {
+                    String memoryUsage = stats[0].trim();
+                    String cpuUsage = stats[1].trim();
+
+                    System.out.println("Memory Usage: " + memoryUsage);
+                    System.out.println("CPU Usage: " + cpuUsage);
+
+                    // Ở đây bạn có thể thêm logic để phân tích và xử lý các giá trị này
+                    // Ví dụ: chuyển đổi "100MiB / 1GiB" thành số để so sánh
+                } else {
+                    System.out.println("Unexpected output format");
+                }
+            } else {
+                System.out.println("Command failed with exit code: " + exitCode);
+                BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                while ((line = errorReader.readLine()) != null) {
+                    System.out.println("Error: " + line);
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
