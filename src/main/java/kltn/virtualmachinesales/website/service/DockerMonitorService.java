@@ -1,34 +1,36 @@
-package kltn.virtualmachinesales.website.controller;
+package kltn.virtualmachinesales.website.service;
 
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import com.github.dockerjava.api.model.Statistics;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import static com.mysql.cj.conf.PropertyKey.logger;
+import java.util.Map;
 
 @Service
 @EnableScheduling
 @Slf4j
 public class DockerMonitorService {
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     private DockerClient dockerClient;
 
     @Value("${passwordUbuntu}")
@@ -42,6 +44,13 @@ public class DockerMonitorService {
 
     @Value("${docker.memory.limit}")
     private long memoryLimit;
+
+    private static final String NGINX_ALERT_URL = "http://localhost:81";
+
+    private static final HttpClient httpClient = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
 
     @PostConstruct
     public void init() {
@@ -66,13 +75,13 @@ public class DockerMonitorService {
 
 
 
-//    @Scheduled(fixedRate = 50000)  // Kiểm tra mỗi 5 giây
+    @Scheduled(fixedRate = 10000)  // Kiểm tra mỗi 5 giây
     public void monitorContainer() {
         String containerName = "hieuxfce2";
 
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
-            String command = String.format("echo '%s' | sudo -S docker stats %s --no-stream --format \"{{.MemUsage}},{{.CPUPerc}}\"",
+            String command = String.format("echo '%s' | sudo -S docker stats %s --no-stream --format \"{{.MemPerc}},{{.CPUPerc}}\"",
                     passwordUbuntu, containerName);
 
             processBuilder.command("bash", "-c", command);
@@ -93,28 +102,28 @@ public class DockerMonitorService {
                 if (stats.length == 2) {
                     String memoryUsage = stats[0].trim();
                     String cpuUsage = stats[1].trim();
-
-                    System.out.println("Memory Usage: " + memoryUsage);
-                    System.out.println("CPU Usage: " + cpuUsage);
-
-                    // Ở đây bạn có thể thêm logic để phân tích và xử lý các giá trị này
-                    // Ví dụ: chuyển đổi "100MiB / 1GiB" thành số để so sánh
+                    // Create a JSON object with the stats
+                    Map<String,String> monitoringData = new HashMap<>();
+                    monitoringData.put("memoryUsage", memoryUsage);
+                    monitoringData.put("cpuUsage", cpuUsage);
+                    // Send the JSON object via WebSocket
+                    messagingTemplate.convertAndSend("/topic/docker-stats", monitoringData.toString());
                 } else {
-                    System.out.println("Unexpected output format");
+                    messagingTemplate.convertAndSend("/topic/docker-stats", "Unexpected output format");
                 }
             } else {
-                System.out.println("Command failed with exit code: " + exitCode);
                 BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                StringBuilder errorMessage = new StringBuilder();
                 while ((line = errorReader.readLine()) != null) {
-                    System.out.println("Error: " + line);
+                    errorMessage.append(line).append("\n");
                 }
+                messagingTemplate.convertAndSend("/topic/docker-stats", "Command failed: " + errorMessage.toString());
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            messagingTemplate.convertAndSend("/topic/docker-stats", "Error: " + e.getMessage());
         }
     }
-
 
     private double calculateCpuUsage(Statistics stats) {
         // Tính toán CPU usage dựa trên thống kê từ Docker API
