@@ -75,7 +75,7 @@ public class DockerMonitorService {
 
 
 
-    @Scheduled(fixedRate = 10000)  // Kiểm tra mỗi 5 giây
+    @Scheduled(fixedRate = 5000)  // Kiểm tra mỗi 5 giây
     public void monitorContainer() {
         String containerName = "hieuxfce2";
 
@@ -123,24 +123,5 @@ public class DockerMonitorService {
         } catch (Exception e) {
             messagingTemplate.convertAndSend("/topic/docker-stats", "Error: " + e.getMessage());
         }
-    }
-
-    private double calculateCpuUsage(Statistics stats) {
-        // Tính toán CPU usage dựa trên thống kê từ Docker API
-        // Đây là một cách tính đơn giản, bạn có thể cần điều chỉnh để có kết quả chính xác hơn
-        long cpuDelta = stats.getCpuStats().getCpuUsage().getTotalUsage() - stats.getPreCpuStats().getCpuUsage().getTotalUsage();
-        long systemDelta = stats.getCpuStats().getSystemCpuUsage() - stats.getPreCpuStats().getSystemCpuUsage();
-        long numCpus = stats.getCpuStats().getOnlineCpus();
-
-        return (cpuDelta / systemDelta) * numCpus * 100.0;
-    }
-
-    private void showWarning(long usedMemory, double usedCpu) {
-        System.out.println("CẢNH BÁO: Tài nguyên container vượt quá giới hạn!");
-        System.out.printf("Bộ nhớ sử dụng: %.2f GB (Giới hạn: 1 GB)%n", usedMemory / (1024.0 * 1024 * 1024));
-        System.out.printf("CPU sử dụng: %.2f%% (Giới hạn: 100%%)%n", usedCpu);
-
-        // Ở đây bạn có thể thêm mã để hiển thị pop-up cảnh báo
-        // Ví dụ: gửi thông báo đến một ứng dụng frontend hoặc sử dụng một thư viện để hiển thị pop-up trên desktop
     }
 }
