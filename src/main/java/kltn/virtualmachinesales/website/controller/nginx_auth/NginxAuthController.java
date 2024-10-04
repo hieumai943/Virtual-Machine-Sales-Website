@@ -1,9 +1,12 @@
 package kltn.virtualmachinesales.website.controller.nginx_auth;
 
+import kltn.virtualmachinesales.website.dto.request.VirtualMachineDTO;
 import kltn.virtualmachinesales.website.request.AuthRequest;
 import kltn.virtualmachinesales.website.service.NginxService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +34,8 @@ public class NginxAuthController {
     public String changeAuth(@RequestBody AuthRequest request) {
         StringBuilder output = new StringBuilder();
         List<String> commands = List.of(
-                "cd /home/hieunm369/Documents/kltn/XPRA_/app/ubuntu/nginx",
+//                "cd /home/hieunm369/Documents/kltn/XPRA_/app/ubuntu/nginx",
+                "cd /home/hieunm369/Documents/'Virtual machine'/website/src/main/resources/nginx",
                 "echo '"+ passwordUbuntu +"' | sudo -S htpasswd -b .htpasswd " + request.getUsername() + " " + request.getPassword()
         );
 
@@ -67,5 +71,9 @@ public class NginxAuthController {
     @PostMapping("/send-email")
     public void sendEmail(@RequestBody AuthRequest request) {
         nginxService.sendEmail(request.getEmail(), request.getUsername());
+    }
+    @PostMapping("create/virtual-machine")
+    public void createVirtualMachine(@RequestBody VirtualMachineDTO virtualMachineDTO) {
+        nginxService.createVirtualMachine(virtualMachineDTO);
     }
 }
