@@ -5,11 +5,13 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import jakarta.annotation.PostConstruct;
+import kltn.virtualmachinesales.website.repository.PortContainerMappingRepository;
 import lombok.extern.slf4j.Slf4j;
 import com.github.dockerjava.api.model.Statistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -29,7 +31,13 @@ import java.util.Map;
 @Slf4j
 public class DockerMonitorService {
     @Autowired
+    private TaskScheduler taskScheduler;
+
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private PortContainerMappingRepository portContainerMappingRepository;
 
     private DockerClient dockerClient;
 
@@ -44,6 +52,7 @@ public class DockerMonitorService {
 
     @Value("${docker.memory.limit}")
     private long memoryLimit;
+
 
     private static final String NGINX_ALERT_URL = "http://localhost:81";
 
@@ -73,12 +82,14 @@ public class DockerMonitorService {
         }
     }
 
+    public String scheduleMonitorTask(Integer port, long fixedRate) {
+        taskScheduler.scheduleAtFixedRate(() -> monitorContainer(port), fixedRate);
+        return monitorContainer(port);
+    }
 
-
-    @Scheduled(fixedRate = 5000)  // Kiểm tra mỗi 5 giây
-    public void monitorContainer() {
-        String containerName = "hieuxfce2";
-
+    public String monitorContainer(Integer port) {
+        String containerName = portContainerMappingRepository.findContainerNameByPort(port);
+        String result = "";
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
             String command = String.format("echo '%s' | sudo -S docker stats %s --no-stream --format \"{{.MemPerc}},{{.CPUPerc}}\"",
@@ -96,20 +107,22 @@ public class DockerMonitorService {
             }
 
             int exitCode = process.waitFor();
-
             if (exitCode == 0 && !output.isEmpty()) {
                 String[] stats = output.get(0).split(",");
                 if (stats.length == 2) {
                     String memoryUsage = stats[0].trim();
                     String cpuUsage = stats[1].trim();
                     // Create a JSON object with the stats
-                    Map<String,String> monitoringData = new HashMap<>();
+                    Map<String, String> monitoringData = new HashMap<>();
                     monitoringData.put("memoryUsage", memoryUsage);
                     monitoringData.put("cpuUsage", cpuUsage);
                     // Send the JSON object via WebSocket
-                    messagingTemplate.convertAndSend("/topic/docker-stats", monitoringData.toString());
+                    result = monitoringData.toString();
+                    messagingTemplate.convertAndSend("/topic/docker-stats", result);
+
                 } else {
-                    messagingTemplate.convertAndSend("/topic/docker-stats", "Unexpected output format");
+                    result ="Unexpected output format";
+                    messagingTemplate.convertAndSend("/topic/docker-stats", result);
                 }
             } else {
                 BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
@@ -117,11 +130,14 @@ public class DockerMonitorService {
                 while ((line = errorReader.readLine()) != null) {
                     errorMessage.append(line).append("\n");
                 }
-                messagingTemplate.convertAndSend("/topic/docker-stats", "Command failed: " + errorMessage.toString());
+                result = "Command failed: " + errorMessage.toString();
+                messagingTemplate.convertAndSend("/topic/docker-stats", result);
             }
 
         } catch (Exception e) {
             messagingTemplate.convertAndSend("/topic/docker-stats", "Error: " + e.getMessage());
         }
+        return result;
+
     }
 }

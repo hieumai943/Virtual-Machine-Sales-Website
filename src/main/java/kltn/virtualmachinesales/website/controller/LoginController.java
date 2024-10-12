@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 @CrossOrigin
@@ -21,10 +22,9 @@ public class LoginController {
             return "plain-login";
         }
 
-    @GetMapping("/test-docker")
-    public ResponseEntity<DefaultResponse<String>> testDocker() {
+    @GetMapping("/test-docker/{port}")
+    public ResponseEntity<DefaultResponse<String>> testDocker(@PathVariable Integer port) {
         // Gọi monitorContainer trong một thread riêng biệt
-        new Thread(() -> dockerMonitorService.monitorContainer()).start();
-        return DefaultResponse.success("Monitoring started");
+        return DefaultResponse.success(dockerMonitorService.scheduleMonitorTask(port, 10000));
     }
 }

@@ -58,11 +58,11 @@ public class DockerComposeService {
                     Map<String, Object> ports = (Map<String, Object>) services.get("nginx");
                     limits.put("cpus", cpuLimit);
                     limits.put("memory", memoryLimit);
-                    List<String> allPorts = (List<String>) ports.get("ports");
-                    if(!allPorts.contains(newPort)) {
-                        allPorts.add(newPort);
-                    }
-                    ports.put("ports", allPorts);
+//                    List<String> allPorts = (List<String>) ports.get("ports");
+//                    if(!allPorts.contains(newPort)) {
+//                        allPorts.add(newPort);
+//                    }
+//                    ports.put("ports", allPorts);
                     // Write the updated data back to the docker-compose.yml file
                     DumperOptions options = new DumperOptions();
                     options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
