@@ -5,9 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface PortContainerMappingRepository extends JpaRepository<PortContainerMapping, Integer> {
 
     @Query("select p.containerName from PortContainerMapping p where p.port = :port")
     String findContainerNameByPort(int port);
+
+    @Query("select p.port from PortContainerMapping p")
+    List<Integer> findAllPorts();
 }

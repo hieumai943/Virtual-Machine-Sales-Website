@@ -1,5 +1,6 @@
 package kltn.virtualmachinesales.website.service;
 
+import kltn.virtualmachinesales.website.repository.PortContainerMappingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -12,81 +13,140 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.*;
 import org.yaml.snakeyaml.constructor.Constructor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.DatagramSocket;
+import java.net.ServerSocket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class DockerComposeService {
     private static final String DOCKER_COMPOSE_FILE = "config/docker-compose.yaml";
+    private static final String CONFIG_NGINX_FOLDER = "config/nginx";
 
     @Autowired
     private ResourceLoader resourceLoader;
 
+    @Autowired
+    private PortContainerMappingRepository portContainerMappingRepository;
+
     @Value("${passwordUbuntu}")
     private String passwordUbuntu;
-
-    public String updateConfig(Map<String, String> request) throws Exception {
-        String serviceName  = "xpra";
-        String cpuLimit = request.get("cpu_limit");
-        String memoryLimit = request.get("memory_limit");
-        String newPort = request.get("port");
-
-        if (serviceName == null || cpuLimit == null || memoryLimit == null) {
-            return "Invalid input";
-        }
-
+    public static boolean available(int port) {
+        ServerSocket ss = null;
+        DatagramSocket ds = null;
         try {
-            // Load the docker-compose.yml file from the config folder
-            File dockerComposeFile = new File(DOCKER_COMPOSE_FILE);
+            ss = new ServerSocket(port);
+            ss.setReuseAddress(true);
+            ds = new DatagramSocket(port);
+            ds.setReuseAddress(true);
+            return true;
+        } catch (IOException e) {
+        } finally {
+            if (ds != null) {
+                ds.close();
+            }
 
-            try (InputStream inputStream = new FileInputStream(dockerComposeFile)) {
-                // Read the docker-compose.yml file
-                LoaderOptions loaderOptions = new LoaderOptions();
-                Constructor constructor = new Constructor(loaderOptions);
-                Yaml yaml = new Yaml(constructor);
-                Map<String, Object> composeData = yaml.load(inputStream);
-
-                // Update the limits
-                Map<String, Object> services = (Map<String, Object>) composeData.get("services");
-                if (services.containsKey(serviceName)) {
-                    Map<String, Object> xpra = (Map<String, Object>) services.get(serviceName);
-                    Map<String, Object> deploy = (Map<String, Object>) xpra.get("deploy");
-                    Map<String, Object> resources = (Map<String, Object>) deploy.get("resources");
-                    Map<String, Object> limits = (Map<String, Object>) resources.get("limits");
-                    Map<String, Object> ports = (Map<String, Object>) services.get("nginx");
-                    limits.put("cpus", cpuLimit);
-                    limits.put("memory", memoryLimit);
-//                    List<String> allPorts = (List<String>) ports.get("ports");
-//                    if(!allPorts.contains(newPort)) {
-//                        allPorts.add(newPort);
-//                    }
-//                    ports.put("ports", allPorts);
-                    // Write the updated data back to the docker-compose.yml file
-                    DumperOptions options = new DumperOptions();
-                    options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-                    Yaml yamlWriter = new Yaml(options);
-                    try (FileWriter writer = new FileWriter(dockerComposeFile)) {
-                        yamlWriter.dump(composeData, writer);
-                    }
-                    restartDocker();
-                    return restartDocker();
-                } else {
-                    return "Service not found";
+            if (ss != null) {
+                try {
+                    ss.close();
+                } catch (IOException e) {
+                    /* should not be thrown */
                 }
             }
+        }
+
+        return false;
+    }
+    public String createUpdatedServiceResources(String cpuLimit, String memoryLimit) {
+        try {
+            List<Integer> ports = portContainerMappingRepository.findAllPorts();
+            Integer maxPort = ports.stream().max(Integer::compareTo).get() + 1;
+            while(available(maxPort)){
+                maxPort++;
+            }
+            String serviceName = "nginx" + maxPort ;
+            String port = maxPort + ":80";
+            // Ensure the config/nginx folder exists
+            Files.createDirectories(Paths.get(CONFIG_NGINX_FOLDER));
+
+            File dockerComposeFile = new File(DOCKER_COMPOSE_FILE);
+            Map<String, Object> composeConfig;
+
+            // Read the existing docker-compose.yml file
+            try (InputStream inputStream = new FileInputStream(dockerComposeFile)) {
+                Yaml yaml = new Yaml();
+                composeConfig = yaml.load(inputStream);
+            }
+
+            // Get the services section
+            Map<String, Object> services = (Map<String, Object>) composeConfig.get("services");
+
+            if (services == null || !services.containsKey("nginx1")) {
+                return "Error: nginx1 service not found in the original file.";
+            }
+
+            // Get the nginx1 service configuration
+            Map<String, Object> nginx1Config = (Map<String, Object>) services.get("nginx1");
+
+            // Create a new service configuration based on nginx1
+            Map<String, Object> newService = new HashMap<>(nginx1Config);
+            List<String> allPorts = new ArrayList<>();
+            allPorts.add(port);
+            newService.put("container_name", serviceName);
+            newService.put("ports", allPorts);
+            // Update the deploy > resources > limits section with new limits
+            Map<String, Object> deploy = (Map<String, Object>) newService.get("deploy");
+            if (deploy == null) {
+                deploy = new HashMap<>();
+                newService.put("deploy", deploy);
+            }
+            Map<String, Object> resources = (Map<String, Object>) deploy.get("resources");
+            if (resources == null) {
+                resources = new HashMap<>();
+                deploy.put("resources", resources);
+            }
+            Map<String, Object> limits = (Map<String, Object>) resources.get("limits");
+            if (limits == null) {
+                limits = new HashMap<>();
+                resources.put("limits", limits);
+            }
+            limits.put("cpus", cpuLimit);
+            limits.put("memory", memoryLimit);
+
+            // Remove the old nginx1 service
+            services.remove("nginx1");
+
+            // Add the new service
+            services.put(serviceName, newService);
+
+            // Create a new file name with timestamp
+            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String newFileName = "docker-compose_" + timestamp + ".yml";
+            File newFile = new File(CONFIG_NGINX_FOLDER, newFileName);
+
+            // Write the updated configuration to the new file
+            DumperOptions options = new DumperOptions();
+            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            options.setPrettyFlow(true);
+            Yaml yamlWriter = new Yaml(options);
+
+            try (FileWriter writer = new FileWriter(newFile)) {
+                yamlWriter.dump(composeConfig, writer);
+            }
+
+            return restartDocker(newFileName, port);
         } catch (IOException e) {
             e.printStackTrace();
             return "Error updating limits";
         }
     }
-    private String restartDocker() {
+    private String restartDocker(String fileName, String port) {
         StringBuilder output = new StringBuilder();
         List<String> commands = List.of(
-                "cd /home/hieunm369/Documents/'Virtual machine'/website/config",
-                "echo '"+ passwordUbuntu +"' | sudo -S docker compose down",
-                "echo '"+ passwordUbuntu +"' | sudo -S docker compose up -d"
+                "cd /home/hieunm369/Documents/'Virtual machine'/website/config/nginx",
+                "echo '"+ passwordUbuntu +"' | sudo -S docker compose -f " + fileName+" up -d"
         );
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
@@ -110,11 +170,14 @@ public class DockerComposeService {
             }
 
             int exitCode = process.waitFor();
-            output.append("Exited with error code : ").append(exitCode);
+            output.append("\nExited with error code : ").append(exitCode);
+            output.append("\nport using: ").append(port);
         } catch (Exception e) {
             output.append("Error executing command: ").append(e.getMessage());
         }
 
         return output.toString();
     }
+
+
 }
