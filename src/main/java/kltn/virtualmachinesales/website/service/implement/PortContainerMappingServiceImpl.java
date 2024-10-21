@@ -16,8 +16,8 @@ public class PortContainerMappingServiceImpl implements PortContainerMappingServ
     @Override
     public PortContainerMapping create(PortContainerMapping portContainerMapping){
          PortContainerMapping portContainerMapping1 =  portContainerMappingRepository.save(portContainerMapping);
-         portContainerMapping1.setPort(portContainerMapping1.getId() + 80);
-         portContainerMapping1.setContainerName("nginx"+ String.valueOf( portContainerMapping1.getId()+ 80));
+//         portContainerMapping1.setPort(portContainerMapping1.getId() + 80);
+         portContainerMapping1.setContainerName("nginx"+ portContainerMapping1.getPort());
          return portContainerMappingRepository.save(portContainerMapping1);
 
     }

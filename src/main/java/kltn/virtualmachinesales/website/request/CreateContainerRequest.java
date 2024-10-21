@@ -9,4 +9,5 @@ import lombok.Data;
     public class CreateContainerRequest {
         private String cpuLimit;
         private String memoryLimit;
+        private Integer port;
     }

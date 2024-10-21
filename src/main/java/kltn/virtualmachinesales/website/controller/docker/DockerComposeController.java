@@ -19,7 +19,7 @@ public class DockerComposeController {
     @PutMapping("/update")
     public ResponseEntity<String> updateConfig(@RequestBody CreateContainerRequest request) {
         try {
-            String result = dockerComposeService.createUpdatedServiceResources( request.getCpuLimit(), request.getMemoryLimit());
+            String result = dockerComposeService.createUpdatedServiceResources( request.getCpuLimit(), request.getMemoryLimit(), request.getPort());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error updating configuration: " + e.getMessage());

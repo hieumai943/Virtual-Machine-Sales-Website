@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface MachineRepository extends JpaRepository<Machine, Integer> {
+        public interface MachineRepository extends JpaRepository<Machine, Integer> {
         @Query("SELECT m from Machine m WHERE m.name = :name")
         Machine getByName(String name);
 }

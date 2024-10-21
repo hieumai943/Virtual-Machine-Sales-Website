@@ -4,6 +4,7 @@ import kltn.virtualmachinesales.website.dto.request.VirtualMachineDTO;
 import kltn.virtualmachinesales.website.entity.Machine;
 import kltn.virtualmachinesales.website.entity.PortContainerMapping;
 import kltn.virtualmachinesales.website.repository.MachineRepository;
+import kltn.virtualmachinesales.website.repository.PortContainerMappingRepository;
 import kltn.virtualmachinesales.website.request.AuthRequest;
 import kltn.virtualmachinesales.website.service.NginxService;
 import kltn.virtualmachinesales.website.service.implement.PortContainerMappingServiceImpl;
@@ -18,8 +19,12 @@ import java.net.Inet4Address;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
+
+import static kltn.virtualmachinesales.website.service.DockerComposeService.available;
 
 @RestController
 @CrossOrigin("http://localhost:3000/")
@@ -37,18 +42,25 @@ public class NginxAuthController {
     private PortContainerMappingServiceImpl portContainerMappingServiceImpl;
     @Autowired
     private MachineRepository machineRepository;
+    @Autowired
+    private PortContainerMappingRepository portContainerMappingRepository;
 
     @PostMapping("/change-auth")
     public String changeAuth(@RequestBody AuthRequest request ) {
         StringBuilder output = new StringBuilder();
-        List<String> commands = List.of(
-                "cd /home/hieunm369/Documents/kltn/XPRA_/app/ubuntu/nginx",
-                "echo '"+ passwordUbuntu +"' | sudo -S htpasswd -b .htpasswd " + request.getUsername() + " " + request.getPassword(),
-                "cd /home/hieunm369/Documents/'Virtual machine'/website/src/main/resources/nginx",
-                "echo '"+ passwordUbuntu +"' | sudo -S htpasswd -b .htpasswd " + request.getUsername() + " " + request.getPassword()
-        );
-
+        List<Integer> ports = portContainerMappingRepository.findAllPorts();
+        Integer maxPort = ports.stream().max(Integer::compareTo).get() + 1;
+        while(!available(maxPort)){
+            maxPort++;
+        }
         try {
+            List<String> commands = new ArrayList<>();
+            String newHtpasswdFile = "nginx" + maxPort + ".htpasswd";
+            String htpasswdFolderPath = "/home/hieunm369/Documents/'Virtual machine'/website/config/nginx/htpasswd_folder";
+
+            commands.add("cd " + htpasswdFolderPath);
+            commands.add("touch " + newHtpasswdFile);
+            commands.add("echo '" + passwordUbuntu + "' | sudo -S htpasswd -b " + newHtpasswdFile + " " + request.getUsername() + " " + request.getPassword());
             // khi tao 1 tai khoan moi tu dong tao 1 container + port
             ProcessBuilder processBuilder = new ProcessBuilder();
             if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
@@ -56,9 +68,6 @@ public class NginxAuthController {
             } else {
                 processBuilder.command("bash", "-c", String.join(" && ", commands));
             }
-            String htpasswdPath = "/home/hieunm369/Documents/kltn/XPRA_/app/ubuntu/nginx/.htpasswd";
-            Path path = Paths.get(htpasswdPath);
-            long lineCount = Files.lines(path).count();
             Process process = processBuilder.start();
             // Đọc output tiêu chuẩn
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -75,20 +84,24 @@ public class NginxAuthController {
 
             int exitCode = process.waitFor();
             output.append("Exited with error code : ").append(exitCode).append("\n");
-            // doc file .htpasswd
-            path = Paths.get(htpasswdPath);
-            if(Files.lines(path).count() != lineCount){
+            // doc file nginx91.htpasswd
+
+//            if(isExisted){
+//                output.append("username đã tồn tại").append("\n");
+//            }
+//            else if(Files.lines(path).count() != lineCount) {
                 // them container moi + port moi
-                Machine machine  = machineRepository.findById(request.getMachineId()).get();
+                Machine machine = machineRepository.findById(request.getMachineId()).get();
 
                 PortContainerMapping portContainerMapping = new PortContainerMapping();
                 portContainerMapping.setRam(Float.valueOf(machine.getRam()));
                 portContainerMapping.setCpu(Float.valueOf(machine.getMemory()));
                 portContainerMapping.setMachineId(request.getMachineId());
+                portContainerMapping.setPort(maxPort);
                 portContainerMappingServiceImpl.create(portContainerMapping);
                 output.append("container moi va port moi da duoc tao ").append("\n");
-            } ;
-
+                output.append("port using:"+ maxPort).append("\n");
+//            }
         } catch (Exception e) {
             output.append("Error executing command: ").append(e.getMessage());
         }

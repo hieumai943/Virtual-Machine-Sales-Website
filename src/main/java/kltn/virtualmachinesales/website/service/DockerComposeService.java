@@ -3,7 +3,6 @@ package kltn.virtualmachinesales.website.service;
 import kltn.virtualmachinesales.website.repository.PortContainerMappingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.DumperOptions;
@@ -11,10 +10,9 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
-import org.yaml.snakeyaml.constructor.Constructor;
 
-import java.net.DatagramSocket;
-import java.net.ServerSocket;
+import java.net.ConnectException;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -33,39 +31,17 @@ public class DockerComposeService {
 
     @Value("${passwordUbuntu}")
     private String passwordUbuntu;
-    public static boolean available(int port) {
-        ServerSocket ss = null;
-        DatagramSocket ds = null;
-        try {
-            ss = new ServerSocket(port);
-            ss.setReuseAddress(true);
-            ds = new DatagramSocket(port);
-            ds.setReuseAddress(true);
+    public static boolean available(int port) throws IllegalStateException {
+        try (Socket ignored = new Socket("localhost", port)) {
+            return false;
+        } catch (ConnectException e) {
             return true;
         } catch (IOException e) {
-        } finally {
-            if (ds != null) {
-                ds.close();
-            }
-
-            if (ss != null) {
-                try {
-                    ss.close();
-                } catch (IOException e) {
-                    /* should not be thrown */
-                }
-            }
+            throw new IllegalStateException("Error while trying to check open port", e);
         }
-
-        return false;
     }
-    public String createUpdatedServiceResources(String cpuLimit, String memoryLimit) {
+    public String createUpdatedServiceResources(String cpuLimit, String memoryLimit, Integer maxPort) {
         try {
-            List<Integer> ports = portContainerMappingRepository.findAllPorts();
-            Integer maxPort = ports.stream().max(Integer::compareTo).get() + 1;
-            while(available(maxPort)){
-                maxPort++;
-            }
             String serviceName = "nginx" + maxPort ;
             String port = maxPort + ":80";
             // Ensure the config/nginx folder exists
@@ -93,9 +69,13 @@ public class DockerComposeService {
             // Create a new service configuration based on nginx1
             Map<String, Object> newService = new HashMap<>(nginx1Config);
             List<String> allPorts = new ArrayList<>();
+            List<String> volumes = new ArrayList<>();
+            volumes.add("./nginx.conf:/etc/nginx/nginx.conf");
+            volumes.add("./htpasswd_folder/nginx"+maxPort+".htpasswd:/etc/nginx/.htpasswd");
             allPorts.add(port);
             newService.put("container_name", serviceName);
             newService.put("ports", allPorts);
+            newService.put("volumes", volumes);
             // Update the deploy > resources > limits section with new limits
             Map<String, Object> deploy = (Map<String, Object>) newService.get("deploy");
             if (deploy == null) {
