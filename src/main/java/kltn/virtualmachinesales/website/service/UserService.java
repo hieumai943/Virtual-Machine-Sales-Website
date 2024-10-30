@@ -29,5 +29,5 @@ public interface UserService {
 //    List<UserViewDTO> listAllUserExceptMe(int userId);
 
     Boolean verifyUser(String gmail, String verifyCode);
-    String verify(User user);
+    String verify(String username, String password) throws Exception;
 }

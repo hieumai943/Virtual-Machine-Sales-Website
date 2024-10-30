@@ -52,13 +52,13 @@ public class UserController {
 //    @PostMapping("/login")
 //    public ResponseEntity<Object> createAuthenticationToken(@RequestBody UserLoginDTO request) throws Exception {
 //        User user = userRepository.findByUsername(request.getUsername());
-//        userService.authenticate(user.getEmail(), request.getPassword());
+//        userService.authenticate(user.getUsername(), request.getPassword());
 //
 //        final UserDetails userDetails = userDetailsService
-//                .loadUserByUsername(user.getEmail());
+//                .loadUserByUsername(user.getUsername());
 //
 //        UserViewDTO userViewDTO = userService.getUserDTOByEmail(user.getEmail());
-//        String token = jwtUntil.generateToken(userDetails);
+//        String token = "123";
 //
 //        return ResponseHandler.generateAuthenticationResponse(userViewDTO, token);
 //    }
@@ -66,21 +66,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<String> createAuthenticationToken(@RequestBody UserLoginDTO request) throws Exception {
         User user = userRepository.findByUsername(request.getUsername());
-        return ResponseEntity.ok(userService.verify(user));
-    }
-
-    @PostMapping("/login-xpra")
-    public ResponseEntity<Object> createAuthenticationTokenXpra(@RequestBody UserLoginDTO request) throws Exception {
-
-        userService.authenticate(request.getUsername(), request.getPassword());
-
-        final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(request.getUsername());
-
-        UserViewDTO userViewDTO = userService.getUserDTOByEmail(request.getUsername());
-        String token = jwtUntil.generateToken(userDetails);
-
-        return ResponseHandler.generateAuthenticationResponse(userViewDTO, token);
+        return ResponseEntity.ok(userService.verify(user.getUsername(), request.getPassword()));
     }
 
     @PostMapping("/register")
