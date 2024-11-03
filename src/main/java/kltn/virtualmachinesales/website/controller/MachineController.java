@@ -27,6 +27,7 @@ public class MachineController {
         return DefaultResponse.success("Group đã được tạo thành công", machineDTO1);
 
     }
+
     @GetMapping("/shop/machine/{id}")
     public ResponseEntity<DefaultResponse<Machine>> getById(@PathVariable Integer id) {
         Machine machine = machineService.getById(id);
