@@ -2,6 +2,7 @@ package kltn.virtualmachinesales.website.controller.usercontroller;
 
 import kltn.virtualmachinesales.website.dto.request.UserCreationDTO;
 import kltn.virtualmachinesales.website.dto.request.UserLoginDTO;
+import kltn.virtualmachinesales.website.dto.response.LoginResponse;
 import kltn.virtualmachinesales.website.dto.response.UserViewDTO;
 import kltn.virtualmachinesales.website.entity.user.User;
 import kltn.virtualmachinesales.website.exceptions.EmailExistException;
@@ -64,9 +65,15 @@ public class UserController {
 //    }
 
     @PostMapping("/login")
-    public ResponseEntity<String> createAuthenticationToken(@RequestBody UserLoginDTO request) throws Exception {
+    public ResponseEntity<LoginResponse> createAuthenticationToken(@RequestBody UserLoginDTO request) throws Exception {
         User user = userRepository.findByUsername(request.getUsername());
         return ResponseEntity.ok(userService.verify(user.getUsername(), request.getPassword()));
+    }
+
+    @GetMapping("/api/user")
+    public ResponseEntity<User> getUserByUserName(@RequestParam String username) throws Exception {
+        User user = userRepository.findByUsername(username);
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping("/register")

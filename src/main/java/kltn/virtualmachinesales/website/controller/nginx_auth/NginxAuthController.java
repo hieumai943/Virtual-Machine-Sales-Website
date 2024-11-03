@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Stream;
@@ -45,7 +46,7 @@ public class NginxAuthController {
     @Autowired
     private PortContainerMappingRepository portContainerMappingRepository;
 
-    @PostMapping("/change-auth")
+    @PostMapping("/shop/change-auth")
     public String changeAuth(@RequestBody AuthRequest request ) {
         StringBuilder output = new StringBuilder();
         List<Integer> ports = portContainerMappingRepository.findAllPorts();
@@ -98,6 +99,8 @@ public class NginxAuthController {
                 portContainerMapping.setCpu(Float.valueOf(machine.getMemory()));
                 portContainerMapping.setMachineId(request.getMachineId());
                 portContainerMapping.setPort(maxPort);
+            portContainerMapping.setCreated(new Date());
+            portContainerMapping.setExpired(new Date());
                 portContainerMappingServiceImpl.create(portContainerMapping);
                 output.append("container moi va port moi da duoc tao ").append("\n");
                 output.append("port using:"+ maxPort).append("\n");

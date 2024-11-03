@@ -21,25 +21,25 @@ public class MachineController {
     @Autowired
     private MachineService machineService;
 
-    @PostMapping("/machine/create")
+    @PostMapping("/shop/machine/create")
     public ResponseEntity<DefaultResponse<MachineDTO>> create(@RequestBody MachineDTO machineDTO ) {
         MachineDTO machineDTO1 =  machineService.createMachine(machineDTO);
         return DefaultResponse.success("Group đã được tạo thành công", machineDTO1);
 
     }
-    @GetMapping("/machine/{id}")
+    @GetMapping("/shop/machine/{id}")
     public ResponseEntity<DefaultResponse<Machine>> getById(@PathVariable Integer id) {
         Machine machine = machineService.getById(id);
         return DefaultResponse.success(machine);
     }
-    @DeleteMapping("machine/{id}")
+    @DeleteMapping("/shop/machine/{id}")
     public ResponseEntity<DefaultResponse<Object>> delete(@PathVariable Integer id) {
         machineService.deleteById(id);
         return DefaultResponse.success("đã xóa thành công ", null);
     }
-    @GetMapping("/machine/list")
-    public ResponseEntity<DefaultListResponse<Machine>> getAllMachine(){
-        List<Machine> machines = machineService.getAll();
+    @GetMapping("/shop/machine/list")
+    public ResponseEntity<DefaultListResponse<Machine>> getAllMachine(@RequestParam String username) {
+        List<Machine> machines = machineService.getAll( username);
         return DefaultListResponse.success(machines, machines.stream().count());
     }
     // API mua don hang do

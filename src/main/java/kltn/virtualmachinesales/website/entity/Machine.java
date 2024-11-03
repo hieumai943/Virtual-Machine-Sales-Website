@@ -24,4 +24,7 @@ public class Machine {
     private String oldPrice;
     @Column(name="new_price")
     private String newPrice;
+    @Column(name="user_id")
+    private Integer userId;
+    private Boolean status;
 }

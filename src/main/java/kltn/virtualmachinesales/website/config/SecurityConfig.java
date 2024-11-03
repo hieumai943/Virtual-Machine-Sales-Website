@@ -1,4 +1,4 @@
-package kltn.virtualmachinesales.website.security;
+package kltn.virtualmachinesales.website.config;
 
 
 import kltn.virtualmachinesales.website.security.jwt.JwtFilter;
@@ -39,7 +39,14 @@ public class SecurityConfig {
 
         return http.csrf(customizer -> customizer.disable()).
                 authorizeHttpRequests(request -> request
-                        .requestMatchers("login", "register").permitAll()
+                        .requestMatchers(
+                                "/login",
+                                "/register",
+                                "/shop/**",// Các API public
+                                "/admin/**" // Các API public,
+                                ,"/api/user**"
+                        ).permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()).
                 httpBasic(Customizer.withDefaults()).
                 sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

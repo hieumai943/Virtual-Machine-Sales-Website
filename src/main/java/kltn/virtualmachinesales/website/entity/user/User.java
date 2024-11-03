@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import kltn.virtualmachinesales.website.dto.response.UserViewDTO;
 import kltn.virtualmachinesales.website.entity.enums.EmailStatus;
 import kltn.virtualmachinesales.website.entity.enums.Gender;
+import kltn.virtualmachinesales.website.entity.enums.Role;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,6 +38,9 @@ public class User {
     private String bio;
 
     private String profile_pic_url;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
 //    @Enumerated(EnumType.STRING)
 //    private EmailStatus emailStatus;

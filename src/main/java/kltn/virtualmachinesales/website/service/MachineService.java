@@ -10,7 +10,7 @@ public interface MachineService {
 
     Machine getById(Integer id) ;
     MachineDTO createMachine(MachineDTO machineDTO);
-    List<Machine> getAll() ;
+    List<Machine> getAll(String username) ;
     void deleteById(Integer id);
 //    Machine buyMachine(Integer id);
     MachineDTO testMachine(MachineDTO machineDTO);

@@ -17,4 +17,5 @@ public class MachineDTO {
     private Boolean isSample;
     private String oldPrice;
     private String newPrice;
+    private Integer userId;
 }

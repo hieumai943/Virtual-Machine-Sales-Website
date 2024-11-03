@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.sound.sampled.Port;
+import java.util.List;
 
 @Service
 public class PortContainerMappingServiceImpl implements PortContainerMappingService {
@@ -20,5 +21,11 @@ public class PortContainerMappingServiceImpl implements PortContainerMappingServ
          portContainerMapping1.setContainerName("nginx"+ portContainerMapping1.getPort());
          return portContainerMappingRepository.save(portContainerMapping1);
 
+    }
+
+    @Override
+    public List<PortContainerMapping> listContainer() {
+        List<PortContainerMapping> portContainerMappings = portContainerMappingRepository.findAll();
+        return portContainerMappings;
     }
 }

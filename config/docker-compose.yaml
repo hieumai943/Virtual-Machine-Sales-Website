@@ -1,9 +1,11 @@
 services:
   xpra:
-    image: hieutestxfce2
+    image: hieuxpra
 #    container_name: hieuxfce2
     hostname: xpra
     restart: always
+    ports:
+      - 82:876
     expose:
     - '9876'
     deploy:

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/api/docker-compose")
+@RequestMapping("/shop/docker-compose")
 @CrossOrigin(origins = "http://localhost:3000")
 public class DockerComposeController {
     @Autowired

@@ -1,5 +1,6 @@
 package kltn.virtualmachinesales.website.service.implement;
 
+import kltn.virtualmachinesales.website.dto.response.LoginResponse;
 import kltn.virtualmachinesales.website.dto.response.UserViewDTO;
 import kltn.virtualmachinesales.website.dto.request.UserCreationDTO;
 import kltn.virtualmachinesales.website.entity.user.User;
@@ -87,15 +88,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String verify(String username, String password) throws Exception{
+    public LoginResponse verify(String username, String password) throws Exception{
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password));
-
+            LoginResponse loginResponse = new LoginResponse();
             if (authentication.isAuthenticated()) {
-                return jwtService.generateToken(username);
+                loginResponse.setToken(jwtService.generateToken(username));
             }
-            return "failed";
+            User user = userRepository.findByUsername(username);
+            loginResponse.setRole(user.getRole());
+            return loginResponse;
         }catch (DisabledException e) {
             throw new Exception("USER_DISABLED", e);
         } catch (BadCredentialsException e) {
