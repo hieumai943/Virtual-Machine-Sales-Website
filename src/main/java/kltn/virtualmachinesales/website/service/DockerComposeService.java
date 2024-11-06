@@ -1,5 +1,7 @@
 package kltn.virtualmachinesales.website.service;
 
+import kltn.virtualmachinesales.website.entity.Machine;
+import kltn.virtualmachinesales.website.repository.MachineRepository;
 import kltn.virtualmachinesales.website.repository.PortContainerMappingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +33,9 @@ public class DockerComposeService {
 
     @Value("${passwordUbuntu}")
     private String passwordUbuntu;
+    @Autowired
+    private MachineRepository machineRepository;
+
     public static boolean available(int port) throws IllegalStateException {
         try (Socket ignored = new Socket("localhost", port)) {
             return false;
@@ -40,7 +45,7 @@ public class DockerComposeService {
             throw new IllegalStateException("Error while trying to check open port", e);
         }
     }
-    public String createUpdatedServiceResources(String cpuLimit, String memoryLimit, Integer maxPort) {
+    public String createUpdatedServiceResources(String cpuLimit, String memoryLimit, Integer maxPort, Integer machineId) {
         try {
             String serviceName = "nginx" + maxPort ;
             String port = maxPort + ":80";
@@ -116,13 +121,13 @@ public class DockerComposeService {
                 yamlWriter.dump(composeConfig, writer);
             }
 
-            return restartDocker(newFileName, port);
+            return restartDocker(newFileName, port, machineId);
         } catch (IOException e) {
             e.printStackTrace();
             return "Error updating limits";
         }
     }
-    private String restartDocker(String fileName, String port) {
+    private String restartDocker(String fileName, String port, Integer machineId) {
         StringBuilder output = new StringBuilder();
         List<String> commands = List.of(
                 "cd /home/hieunm369/Documents/'Virtual machine'/website/config/nginx",
@@ -152,6 +157,11 @@ public class DockerComposeService {
             int exitCode = process.waitFor();
             output.append("\nExited with error code : ").append(exitCode);
             output.append("\nport using: ").append(port);
+            if(exitCode == 0){
+                Machine machine = machineRepository.findById(machineId).orElse(null);
+                machine.setStatus(Boolean.TRUE);
+                machineRepository.save(machine);
+            }
         } catch (Exception e) {
             output.append("Error executing command: ").append(e.getMessage());
         }

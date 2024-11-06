@@ -10,4 +10,5 @@ import lombok.Data;
         private String cpuLimit;
         private String memoryLimit;
         private Integer port;
+        private Integer machineId;
     }

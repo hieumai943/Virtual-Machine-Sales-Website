@@ -1,14 +1,18 @@
 package kltn.virtualmachinesales.website.service.implement;
 
 import kltn.virtualmachinesales.website.dto.MachineDTO;
+import kltn.virtualmachinesales.website.dto.response.MachineDto;
 import kltn.virtualmachinesales.website.entity.Machine;
 import kltn.virtualmachinesales.website.entity.user.User;
 import kltn.virtualmachinesales.website.repository.MachineRepository;
+import kltn.virtualmachinesales.website.repository.PortContainerMappingRepository;
 import kltn.virtualmachinesales.website.repository.UserRepository;
 import kltn.virtualmachinesales.website.service.MachineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,6 +22,8 @@ public class MachineServiceImpl implements MachineService {
     private MachineRepository machineRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private PortContainerMappingRepository portContainerMappingRepository;
 
     public Machine getById(Integer id){
         Machine machine = machineRepository.findById(id).orElse(null);
@@ -41,12 +47,37 @@ public class MachineServiceImpl implements MachineService {
         machineRepository.save(machine);
         return machineDTO;
     }
-    public List<Machine> getAll(String username){
+    public List<MachineDto> getAll(String username){
         User user = userRepository.findByUsername(username);
         List<Machine> machines = machineRepository.findAllByUserId(user.getId());
         List<Machine> sampleMachines = machineRepository.findAlllSample();
         machines.addAll(sampleMachines);
-        return machines;
+        List<MachineDto> machineDtos = new ArrayList<>();
+        for (Machine machine : machines) {
+            List<Integer> portContainerMapping = portContainerMappingRepository.findPortByMachineId(machine.getId());
+            MachineDto machineDto = new MachineDto();
+            machineDto.setId(machine.getId());
+            machineDto.setName(machine.getName());
+            machineDto.setDescription(machine.getDescription());
+            machineDto.setRam(machine.getRam());
+            machineDto.setCoreCpu(machine.getCoreCpu());
+            machineDto.setMemory(machine.getMemory());
+            machineDto.setImgSrc(machine.getImgSrc());
+            machineDto.setIsSample(machine.getIsSample());
+            machineDto.setOldPrice(machine.getOldPrice());
+            machineDto.setNewPrice(machine.getNewPrice());
+            machineDto.setImgSrc(machine.getImgSrc());
+            machineDto.setStatus(machine.getStatus());
+            machineDto.setUserId(machine.getUserId());
+            if(CollectionUtils.isEmpty(portContainerMapping)){
+                machineDto.setPort(80);
+            }
+            else{
+                machineDto.setPort(portContainerMapping.get(0));
+            }
+            machineDtos.add(machineDto);
+        }
+        return machineDtos;
     }
     public void deleteById(Integer id){
         machineRepository.deleteById(id);

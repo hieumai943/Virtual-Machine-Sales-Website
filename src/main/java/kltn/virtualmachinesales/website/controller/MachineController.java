@@ -2,6 +2,7 @@ package kltn.virtualmachinesales.website.controller;
 
 
 import kltn.virtualmachinesales.website.dto.MachineDTO;
+import kltn.virtualmachinesales.website.dto.response.MachineDto;
 import kltn.virtualmachinesales.website.entity.Machine;
 import kltn.virtualmachinesales.website.http.DefaultListResponse;
 import kltn.virtualmachinesales.website.http.DefaultResponse;
@@ -39,8 +40,8 @@ public class MachineController {
         return DefaultResponse.success("đã xóa thành công ", null);
     }
     @GetMapping("/shop/machine/list")
-    public ResponseEntity<DefaultListResponse<Machine>> getAllMachine(@RequestParam String username) {
-        List<Machine> machines = machineService.getAll( username);
+    public ResponseEntity<DefaultListResponse<MachineDto>> getAllMachine(@RequestParam String username) {
+        List<MachineDto> machines = machineService.getAll( username);
         return DefaultListResponse.success(machines, machines.stream().count());
     }
     // API mua don hang do

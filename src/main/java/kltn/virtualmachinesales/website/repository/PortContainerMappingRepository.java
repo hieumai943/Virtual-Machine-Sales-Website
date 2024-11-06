@@ -15,4 +15,7 @@ public interface PortContainerMappingRepository extends JpaRepository<PortContai
 
     @Query("select p.port from PortContainerMapping p")
     List<Integer> findAllPorts();
+
+    @Query("select p.port from PortContainerMapping p where p.machineId = :machineId")
+    List<Integer> findPortByMachineId(Integer machineId);
 }

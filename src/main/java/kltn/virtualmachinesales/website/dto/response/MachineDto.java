@@ -1,15 +1,13 @@
-package kltn.virtualmachinesales.website.entity;
+package kltn.virtualmachinesales.website.dto.response;
 
-import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.persistence.Column;
+import lombok.*;
 
-@Table(name = "machines")
-@Entity
+
 @Data
-public class Machine {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-     private Integer id;
+@NoArgsConstructor
+public class MachineDto {
+    private Integer id;
     private String name;
     private String description;
     private String ram;
@@ -27,4 +25,5 @@ public class Machine {
     @Column(name="user_id")
     private Integer userId;
     private Boolean status;
+    private Integer port;
 }
