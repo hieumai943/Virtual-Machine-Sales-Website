@@ -1,6 +1,7 @@
 package kltn.virtualmachinesales.website.service;
 
 import kltn.virtualmachinesales.website.entity.Machine;
+import kltn.virtualmachinesales.website.entity.PortContainerMapping;
 import kltn.virtualmachinesales.website.repository.MachineRepository;
 import kltn.virtualmachinesales.website.repository.PortContainerMappingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,11 @@ public class DockerComposeService {
 
             // Get the nginx1 service configuration
             Map<String, Object> nginx1Config = (Map<String, Object>) services.get("nginx1");
-
+            Map<String, Object> xpra = (Map<String, Object>) services.get("xpra");
+            Map<String, Object> newXpra = new HashMap<>(xpra);
+            newXpra.put("container_name", "hieuxfce" + maxPort);
+            services.put("xpra"+maxPort, newXpra);
+            services.remove("xpra");
             // Create a new service configuration based on nginx1
             Map<String, Object> newService = new HashMap<>(nginx1Config);
             List<String> allPorts = new ArrayList<>();
@@ -81,6 +86,9 @@ public class DockerComposeService {
             newService.put("container_name", serviceName);
             newService.put("ports", allPorts);
             newService.put("volumes", volumes);
+            List<String> dependXpra = new ArrayList<>();
+            dependXpra.add("xpra"+maxPort);
+            newService.put("depends_on",dependXpra);
             // Update the deploy > resources > limits section with new limits
             Map<String, Object> deploy = (Map<String, Object>) newService.get("deploy");
             if (deploy == null) {
@@ -105,7 +113,6 @@ public class DockerComposeService {
 
             // Add the new service
             services.put(serviceName, newService);
-
             // Create a new file name with timestamp
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
             String newFileName = "docker-compose_" + timestamp + ".yml";
@@ -161,6 +168,9 @@ public class DockerComposeService {
                 Machine machine = machineRepository.findById(machineId).orElse(null);
                 machine.setStatus(Boolean.TRUE);
                 machineRepository.save(machine);
+                List<PortContainerMapping> portContainerMappings = portContainerMappingRepository.findAllByMachineId(machineId);
+                portContainerMappings.forEach(x -> x.setStatus(Boolean.TRUE));
+                portContainerMappingRepository.saveAll(portContainerMappings);
             }
         } catch (Exception e) {
             output.append("Error executing command: ").append(e.getMessage());

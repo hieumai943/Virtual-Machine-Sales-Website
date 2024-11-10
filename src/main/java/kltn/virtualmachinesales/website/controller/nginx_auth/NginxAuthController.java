@@ -99,8 +99,9 @@ public class NginxAuthController {
                 portContainerMapping.setCpu(Float.valueOf(machine.getMemory()));
                 portContainerMapping.setMachineId(request.getMachineId());
                 portContainerMapping.setPort(maxPort);
-            portContainerMapping.setCreated(new Date());
-            portContainerMapping.setExpired(new Date());
+                portContainerMapping.setImgSrc("https://res.cloudinary.com/dlggnttqv/image/upload/v1726463019/machine_1_fgtptn.png");
+                portContainerMapping.setCreated(new Date());
+                portContainerMapping.setExpired(new Date());
                 portContainerMappingServiceImpl.create(portContainerMapping);
                 output.append("container moi va port moi da duoc tao ").append("\n");
                 output.append("port using:"+ maxPort).append("\n");
