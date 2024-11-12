@@ -8,10 +8,12 @@ import kltn.virtualmachinesales.website.repository.PortContainerMappingRepositor
 import kltn.virtualmachinesales.website.request.AuthRequest;
 import kltn.virtualmachinesales.website.service.NginxService;
 import kltn.virtualmachinesales.website.service.implement.PortContainerMappingServiceImpl;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
@@ -45,6 +47,8 @@ public class NginxAuthController {
     private MachineRepository machineRepository;
     @Autowired
     private PortContainerMappingRepository portContainerMappingRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/shop/change-auth")
     public String changeAuth(@RequestBody AuthRequest request ) {
@@ -93,7 +97,9 @@ public class NginxAuthController {
 //            else if(Files.lines(path).count() != lineCount) {
                 // them container moi + port moi
                 Machine machine = machineRepository.findById(request.getMachineId()).get();
-
+                machine.setUserAuth(request.getUsername());
+                machine.setPassAuth(DigestUtils.sha256Hex(request.getPassword()).toUpperCase());
+                machineRepository.save(machine);
                 PortContainerMapping portContainerMapping = new PortContainerMapping();
                 portContainerMapping.setRam(Float.valueOf(machine.getRam()));
                 portContainerMapping.setCpu(Float.valueOf(machine.getMemory()));

@@ -1,5 +1,6 @@
 package kltn.virtualmachinesales.website.repository;
 
+import kltn.virtualmachinesales.website.entity.Machine;
 import kltn.virtualmachinesales.website.entity.PortContainerMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,4 +22,7 @@ public interface PortContainerMappingRepository extends JpaRepository<PortContai
 
     @Query("select p from PortContainerMapping p where p.machineId = :machineId")
     List<PortContainerMapping> findAllByMachineId(Integer machineId);
+
+    @Query("SELECT p.machineId from PortContainerMapping p WHERE p.port = :port")
+    Integer getMachineByPort(Integer port);
 }

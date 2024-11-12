@@ -1,19 +1,24 @@
 package kltn.virtualmachinesales.website.service.implement;
 
 import kltn.virtualmachinesales.website.dto.MachineDTO;
+import kltn.virtualmachinesales.website.dto.MachinePortDTO;
 import kltn.virtualmachinesales.website.dto.response.MachineDto;
 import kltn.virtualmachinesales.website.entity.Machine;
 import kltn.virtualmachinesales.website.entity.user.User;
 import kltn.virtualmachinesales.website.repository.MachineRepository;
 import kltn.virtualmachinesales.website.repository.PortContainerMappingRepository;
 import kltn.virtualmachinesales.website.repository.UserRepository;
+import kltn.virtualmachinesales.website.request.AuthRequest;
 import kltn.virtualmachinesales.website.service.MachineService;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class MachineServiceImpl implements MachineService {
@@ -24,6 +29,8 @@ public class MachineServiceImpl implements MachineService {
     private UserRepository userRepository;
     @Autowired
     private PortContainerMappingRepository portContainerMappingRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public Machine getById(Integer id){
         Machine machine = machineRepository.findById(id).orElse(null);
@@ -47,6 +54,20 @@ public class MachineServiceImpl implements MachineService {
         machineRepository.save(machine);
         return machineDTO;
     }
+
+    @Override
+    public String auth(AuthRequest authRequest) {
+        Machine machine = machineRepository.findByUserAuth(authRequest.getUsername(), authRequest.getMachineId());
+        if(Objects.isNull(machine)){
+            return null;
+        }
+        String authPassHash = DigestUtils.sha256Hex(authRequest.getPassword()).toUpperCase();
+        if(authPassHash.equals(machine.getPassAuth())){
+            return authRequest.getUsername();
+        }
+        return null;
+    }
+
     public List<MachineDto> getAll(String username){
         User user = userRepository.findByUsername(username);
         List<Machine> machines = machineRepository.findAllByUserId(user.getId());
@@ -90,6 +111,11 @@ public class MachineServiceImpl implements MachineService {
         machineDTO1.setDescription(machineDTO.getDescription());
         machineDTO1.setId(machineDTO.getId());
         return machineDTO1;
+    }
+    public MachinePortDTO getMachineByPort(Integer port){
+        MachinePortDTO machinePortDTO = new MachinePortDTO();
+        machinePortDTO.setMachineId(portContainerMappingRepository.getMachineByPort(port));
+        return machinePortDTO;
     }
 
 }

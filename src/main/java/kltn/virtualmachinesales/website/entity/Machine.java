@@ -27,4 +27,8 @@ public class Machine {
     @Column(name="user_id")
     private Integer userId;
     private Boolean status;
+    @Column(name="user_auth")
+    private String userAuth;
+    @Column(name="pass_auth")
+    private String passAuth;
 }

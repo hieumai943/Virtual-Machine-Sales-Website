@@ -34,7 +34,6 @@ services:
           memory: 2G
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./htpasswd_folder/nginx91.htpasswd:/etc/nginx/.htpasswd
       - xpra_volume:/usr/share/xpra
     depends_on:
       - xpra

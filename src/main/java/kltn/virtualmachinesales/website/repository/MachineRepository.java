@@ -12,8 +12,14 @@ import java.util.List;
         @Query("SELECT m from Machine m WHERE m.name = :name")
         Machine getByName(String name);
 
+        @Query("SELECT m from Machine m order by m.id desc")
         List<Machine> findAllByUserId(Integer userId);
 
         @Query("SELECT m from Machine m WHERE m.isSample = true")
         List<Machine> findAlllSample();
+
+        @Query("SELECT m from Machine m WHERE m.userAuth = :auth and m.id = :machineId")
+        Machine findByUserAuth(String auth, Integer machineId );
+
+
 }

@@ -2,10 +2,12 @@ package kltn.virtualmachinesales.website.controller;
 
 
 import kltn.virtualmachinesales.website.dto.MachineDTO;
+import kltn.virtualmachinesales.website.dto.MachinePortDTO;
 import kltn.virtualmachinesales.website.dto.response.MachineDto;
 import kltn.virtualmachinesales.website.entity.Machine;
 import kltn.virtualmachinesales.website.http.DefaultListResponse;
 import kltn.virtualmachinesales.website.http.DefaultResponse;
+import kltn.virtualmachinesales.website.request.AuthRequest;
 import kltn.virtualmachinesales.website.service.MachineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +19,7 @@ import javax.crypto.Mac;
 import java.util.List;
 
 @Controller
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin()
 public class MachineController {
     @Autowired
     private MachineService machineService;
@@ -26,6 +28,12 @@ public class MachineController {
     public ResponseEntity<DefaultResponse<MachineDTO>> create(@RequestBody MachineDTO machineDTO ) {
         MachineDTO machineDTO1 =  machineService.createMachine(machineDTO);
         return DefaultResponse.success("Group đã được tạo thành công", machineDTO1);
+
+    }
+
+    @PostMapping("/shop/machine/auth")
+    public ResponseEntity<DefaultResponse<String>> MachineAuth(@RequestBody AuthRequest authRequest) {
+        return DefaultResponse.success("Tai khoan đã được tạo thành công",  machineService.auth(authRequest));
 
     }
 
@@ -43,6 +51,11 @@ public class MachineController {
     public ResponseEntity<DefaultListResponse<MachineDto>> getAllMachine(@RequestParam String username) {
         List<MachineDto> machines = machineService.getAll( username);
         return DefaultListResponse.success(machines, machines.stream().count());
+    }
+    @GetMapping("/shop/machine/port/{port}")
+    public ResponseEntity<DefaultResponse<MachinePortDTO>> getMachineByPort(@PathVariable Integer port) {
+        MachinePortDTO machine = machineService.getMachineByPort( port);
+        return DefaultResponse.success(machine);
     }
     // API mua don hang do
 //    @PostMapping("machine/{id}")
