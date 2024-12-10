@@ -1,0 +1,39 @@
+services:
+  xpra:
+    image: hieuxpra
+    hostname: xpra
+    restart: always
+    ports:
+    - 82:876
+    expose:
+    - '9876'
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 3G
+    mem_limit: 3g
+    memswap_limit: 22g
+  auth_changer:
+    image: alpine
+    volumes:
+    - ./nginx/nginx91.htpasswd:/etc/nginx/nginx91.htpasswd
+    - ./change_auth.sh:/change_auth.sh
+    - ./auth_credentials.txt:/auth_credentials.txt
+    - ./init_auth_changer.sh:/init_auth_changer.sh
+    command: sh /init_auth_changer.sh
+  nginx85:
+    volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf
+    - ./htpasswd_folder/nginx85.htpasswd:/etc/nginx/.htpasswd
+    image: nginx
+    depends_on:
+    - xpra
+    container_name: nginx85
+    ports:
+    - 85:80
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 16G

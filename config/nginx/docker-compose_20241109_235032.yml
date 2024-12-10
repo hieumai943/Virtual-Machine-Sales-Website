@@ -1,0 +1,39 @@
+volumes:
+  xpra_volume:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: xpra_volume
+services:
+  xpra86:
+    image: hieuxpra
+    container_name: hieuxfce86
+    hostname: xpra
+    restart: always
+    expose:
+    - '9876'
+    volumes:
+    - xpra_volume:/usr/share/xpra
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    mem_limit: 1g
+    memswap_limit: 22g
+  nginx86:
+    volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf
+    - ./htpasswd_folder/nginx86.htpasswd:/etc/nginx/.htpasswd
+    image: nginx
+    depends_on:
+    - xpra86
+    container_name: nginx86
+    ports:
+    - 86:80
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G

@@ -1,0 +1,26 @@
+volumes:
+  xpra_volume_2:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: xpra_volume_2
+services:
+  xpra96:
+    image: hieuxpra
+    mem_limit: 1g
+    hostname: xpra
+    container_name: hieuxfce96
+    restart: always
+    volumes:
+    - xpra_volume_2:/usr/share/xpra
+    expose:
+    - '9876'
+    ports:
+      - 96:9876
+    memswap_limit: 22g
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
