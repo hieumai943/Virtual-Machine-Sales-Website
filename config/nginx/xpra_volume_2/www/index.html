@@ -74,7 +74,6 @@
   }
 
   body {
-    /*background-image: url('./icons/bgr.png') !important;*/
     /* Replace with your preferred color */
     background-repeat: no-repeat;
     background-size: cover;
@@ -800,9 +799,9 @@
 <script>
   function updatebgr () {
       if(localStorage.getItem('img') == null ){
-        localStorage.setItem('img', "url('./icons/bgr.png')");
+        localStorage.setItem('img', 'url("./icons/bgr.png")');
       }
-      document.body.style.backgroundImage = `url('${localStorage.getItem('img')}')`;
+      document.body.style.backgroundImage = localStorage.getItem('img')
   }
   updatebgr();
   function updateTheme() {
@@ -1311,7 +1310,7 @@
       const data = await response.json();
       console.log(data.data.imgSrc)
       localStorage.setItem('img', data.data.imgSrc)
-      document.body.style.backgroundImage = `url('${localStorage.getItem('img')}')`;
+      document.body.style.backgroundImage = localStorage.getItem('img');
     } catch (error) {
     }
   });
