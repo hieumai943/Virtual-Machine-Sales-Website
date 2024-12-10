@@ -2,19 +2,23 @@ package kltn.virtualmachinesales.website.service.implement;
 
 import kltn.virtualmachinesales.website.dto.MachineDTO;
 import kltn.virtualmachinesales.website.dto.MachinePortDTO;
+import kltn.virtualmachinesales.website.dto.response.CloudinaryResponseDTO;
 import kltn.virtualmachinesales.website.dto.response.MachineDto;
 import kltn.virtualmachinesales.website.entity.Machine;
+import kltn.virtualmachinesales.website.entity.PortContainerMapping;
 import kltn.virtualmachinesales.website.entity.user.User;
 import kltn.virtualmachinesales.website.repository.MachineRepository;
 import kltn.virtualmachinesales.website.repository.PortContainerMappingRepository;
 import kltn.virtualmachinesales.website.repository.UserRepository;
 import kltn.virtualmachinesales.website.request.AuthRequest;
+import kltn.virtualmachinesales.website.request.ChangeBgrRequest;
 import kltn.virtualmachinesales.website.service.MachineService;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +35,8 @@ public class MachineServiceImpl implements MachineService {
     private PortContainerMappingRepository portContainerMappingRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private FileUploadServiceImpl fileUploadServiceImpl;
 
     public Machine getById(Integer id){
         Machine machine = machineRepository.findById(id).orElse(null);
@@ -53,6 +59,21 @@ public class MachineServiceImpl implements MachineService {
         machine.setImgSrc("https://res.cloudinary.com/dlggnttqv/image/upload/v1726463019/machine_1_fgtptn.png");
         machineRepository.save(machine);
         return machineDTO;
+    }
+
+    @Override
+    public Machine renderImage(ChangeBgrRequest file){
+        if(Objects.isNull(file.getFile())){
+            return null;
+        }
+        String fileName = file.getFile().getOriginalFilename();
+        CloudinaryResponseDTO responseDTO = fileUploadServiceImpl.uploadFile( file.getFile(), fileName);
+        String postImg = responseDTO.getUrl();
+        Integer machineId = portContainerMappingRepository.getMachineByPort(file.getPort());
+        Machine machine = machineRepository.findById(machineId).orElse(null);
+        machine.setImgSrc(postImg);
+        machineRepository.save(machine);
+        return machine;
     }
 
     @Override

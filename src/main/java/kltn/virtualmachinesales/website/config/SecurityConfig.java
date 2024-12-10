@@ -45,6 +45,7 @@ public class SecurityConfig {
                                 "/shop/**",// Các API public
                                 "/admin/**" // Các API public,
                                 ,"/api/user**"
+                                ,"/test-docker/**"
                         ).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()).

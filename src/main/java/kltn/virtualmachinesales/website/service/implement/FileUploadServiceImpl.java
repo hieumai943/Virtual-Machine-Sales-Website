@@ -1,9 +1,12 @@
-package kltn.virtualmachinesales.website.service;
+package kltn.virtualmachinesales.website.service.implement;
 
 
 import com.cloudinary.Cloudinary;
 import jakarta.transaction.Transactional;
+import kltn.virtualmachinesales.website.dto.response.CloudinaryResponseDTO;
+import kltn.virtualmachinesales.website.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.common.security.oauthbearer.internals.secured.ValidateException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +36,7 @@ public class FileUploadServiceImpl implements FileUploadService {
             final String publicID = result.get("public_id").toString();
             return CloudinaryResponseDTO.builder().publicId(publicID).url(url).build();
         } catch (final Exception e) {
-            throw new FuncErrorException("Failed to upload file");
+            throw new ValidateException("Failed to upload file");
         }
     }
 }

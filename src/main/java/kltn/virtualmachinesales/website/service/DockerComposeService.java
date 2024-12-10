@@ -49,7 +49,7 @@ public class DockerComposeService {
     public String createUpdatedServiceResources(String cpuLimit, String memoryLimit, Integer maxPort, Integer machineId) {
         try {
             String serviceName = "nginx" + maxPort ;
-            String port = maxPort + ":80";
+            String port = maxPort + ":9876";
             // Ensure the config/nginx folder exists
             Files.createDirectories(Paths.get(CONFIG_NGINX_FOLDER));
 
@@ -65,54 +65,58 @@ public class DockerComposeService {
             // Get the services section
             Map<String, Object> services = (Map<String, Object>) composeConfig.get("services");
 
-            if (services == null || !services.containsKey("nginx1")) {
-                return "Error: nginx1 service not found in the original file.";
-            }
+//            if (services == null || !services.containsKey("nginx1")) {
+//                return "Error: nginx1 service not found in the original file.";
+//            }
 
             // Get the nginx1 service configuration
             Map<String, Object> nginx1Config = (Map<String, Object>) services.get("nginx1");
             Map<String, Object> xpra = (Map<String, Object>) services.get("xpra");
             Map<String, Object> newXpra = new HashMap<>(xpra);
             newXpra.put("container_name", "hieuxfce" + maxPort);
+            List<String> allPorts = new ArrayList<>();
+            allPorts.add(port);
+            newXpra.put("ports", allPorts);
             services.put("xpra"+maxPort, newXpra);
             services.remove("xpra");
             // Create a new service configuration based on nginx1
-            Map<String, Object> newService = new HashMap<>(nginx1Config);
-            List<String> allPorts = new ArrayList<>();
-            List<String> volumes = new ArrayList<>();
-            volumes.add("./nginx.conf:/etc/nginx/nginx.conf");
-            volumes.add("./htpasswd_folder/nginx"+maxPort+".htpasswd:/etc/nginx/.htpasswd");
-            allPorts.add(port);
-            newService.put("container_name", serviceName);
-            newService.put("ports", allPorts);
-            newService.put("volumes", volumes);
-            List<String> dependXpra = new ArrayList<>();
-            dependXpra.add("xpra"+maxPort);
-            newService.put("depends_on",dependXpra);
+//            Map<String, Object> newService = new HashMap<>(nginx1Config);
+//            List<String> allPorts = new ArrayList<>();
+//            List<String> volumes = new ArrayList<>();
+//            volumes.add("./nginx.conf:/etc/nginx/nginx.conf");
+//            volumes.add("./htpasswd_folder/nginx"+maxPort+".htpasswd:/etc/nginx/.htpasswd");
+//            volumes.add("xpra_volume_2:/usr/share/xpra");
+//            allPorts.add(port);
+//            newService.put("container_name", serviceName);
+//            newService.put("ports", allPorts);
+//            newService.put("volumes", volumes);
+//            List<String> dependXpra = new ArrayList<>();
+//            dependXpra.add("xpra"+maxPort);
+//            newService.put("depends_on",dependXpra);
             // Update the deploy > resources > limits section with new limits
-            Map<String, Object> deploy = (Map<String, Object>) newService.get("deploy");
-            if (deploy == null) {
-                deploy = new HashMap<>();
-                newService.put("deploy", deploy);
-            }
-            Map<String, Object> resources = (Map<String, Object>) deploy.get("resources");
-            if (resources == null) {
-                resources = new HashMap<>();
-                deploy.put("resources", resources);
-            }
-            Map<String, Object> limits = (Map<String, Object>) resources.get("limits");
-            if (limits == null) {
-                limits = new HashMap<>();
-                resources.put("limits", limits);
-            }
-            limits.put("cpus", cpuLimit);
-            limits.put("memory", memoryLimit);
-
-            // Remove the old nginx1 service
-            services.remove("nginx1");
-
-            // Add the new service
-            services.put(serviceName, newService);
+//            Map<String, Object> deploy = (Map<String, Object>) newService.get("deploy");
+//            if (deploy == null) {
+//                deploy = new HashMap<>();
+//                newService.put("deploy", deploy);
+//            }
+//            Map<String, Object> resources = (Map<String, Object>) deploy.get("resources");
+//            if (resources == null) {
+//                resources = new HashMap<>();
+//                deploy.put("resources", resources);
+//            }
+//            Map<String, Object> limits = (Map<String, Object>) resources.get("limits");
+//            if (limits == null) {
+//                limits = new HashMap<>();
+//                resources.put("limits", limits);
+//            }
+//            limits.put("cpus", cpuLimit);
+//            limits.put("memory", memoryLimit);
+//
+//            // Remove the old nginx1 service
+//            services.remove("nginx1");
+//
+//            // Add the new service
+//            services.put(serviceName, newService);
             // Create a new file name with timestamp
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
             String newFileName = "docker-compose_" + timestamp + ".yml";
@@ -180,4 +184,8 @@ public class DockerComposeService {
     }
 
 
+    public String changeStatusContainer(int isStart, String containerName) {
+
+        return "Successfully change status of machine "+ containerName;
+    }
 }

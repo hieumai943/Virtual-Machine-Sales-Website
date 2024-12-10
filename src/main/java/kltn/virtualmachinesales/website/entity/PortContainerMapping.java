@@ -22,6 +22,7 @@ public class PortContainerMapping {
     private Integer port;
     private Float ram;
     private Float cpu;
+    private Float memory;
     private Integer machineId;
     private Boolean status;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
@@ -30,4 +31,6 @@ public class PortContainerMapping {
     private Date created;
     @Column(name = "img_src")
     private String imgSrc;
+    @Column(name = "user_name")
+    private String username;
 }

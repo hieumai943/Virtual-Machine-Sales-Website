@@ -1,6 +1,7 @@
 package kltn.virtualmachinesales.website.controller;
 
 
+import kltn.virtualmachinesales.website.dto.request.ContainerInfo;
 import kltn.virtualmachinesales.website.http.DefaultResponse;
 import kltn.virtualmachinesales.website.service.DockerMonitorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +24,9 @@ public class LoginController {
         }
 
     @GetMapping("/test-docker/{port}")
-    public ResponseEntity<DefaultResponse<String>> testDocker(@PathVariable Integer port) {
+    public ResponseEntity<DefaultResponse<ContainerInfo>> testDocker(@PathVariable Integer port) {
         // Gọi monitorContainer trong một thread riêng biệt
-        return DefaultResponse.success(dockerMonitorService.scheduleMonitorTask(port, 10000));
+//        return DefaultResponse.success(dockerMonitorService.scheduleMonitorTask(port, 10000));
+        return DefaultResponse.success(dockerMonitorService.scheduleMonitorTask(port));
     }
 }

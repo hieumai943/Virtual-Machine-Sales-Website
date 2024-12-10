@@ -8,4 +8,5 @@ import java.util.List;
 public interface PortContainerMappingService {
      PortContainerMapping create(PortContainerMapping portContainerMapping);
      List<PortContainerMapping> listContainer();
+     PortContainerMapping getById(Integer id);
 }

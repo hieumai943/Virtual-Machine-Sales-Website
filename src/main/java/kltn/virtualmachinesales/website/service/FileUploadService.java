@@ -1,4 +1,8 @@
 package kltn.virtualmachinesales.website.service;
 
-public class FileUploadService {
+import kltn.virtualmachinesales.website.dto.response.CloudinaryResponseDTO;
+import org.springframework.web.multipart.MultipartFile;
+
+public interface FileUploadService {
+    CloudinaryResponseDTO uploadFile(MultipartFile multipartFile, final String fileName);
 }

@@ -5,6 +5,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import jakarta.annotation.PostConstruct;
+import kltn.virtualmachinesales.website.dto.request.ContainerInfo;
 import kltn.virtualmachinesales.website.repository.PortContainerMappingRepository;
 import lombok.extern.slf4j.Slf4j;
 import com.github.dockerjava.api.model.Statistics;
@@ -82,14 +83,15 @@ public class DockerMonitorService {
         }
     }
 
-    public String scheduleMonitorTask(Integer port, long fixedRate) {
-        taskScheduler.scheduleAtFixedRate(() -> monitorContainer(port), fixedRate);
+    public ContainerInfo scheduleMonitorTask(Integer port) {
+//        taskScheduler.scheduleAtFixedRate(() -> monitorContainer(port), fixedRate);
         return monitorContainer(port);
     }
 
-    public String monitorContainer(Integer port) {
+    public ContainerInfo monitorContainer(Integer port) {
         String containerName = portContainerMappingRepository.findContainerNameByPort(port);
-        String result = "";
+
+        ContainerInfo result = new ContainerInfo();
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
             String command = String.format("echo '%s' | sudo -S docker stats %s --no-stream --format \"{{.MemPerc}},{{.CPUPerc}}\"",
@@ -105,7 +107,6 @@ public class DockerMonitorService {
             while ((line = reader.readLine()) != null) {
                 output.add(line);
             }
-
             int exitCode = process.waitFor();
             if (exitCode == 0 && !output.isEmpty()) {
                 String[] stats = output.get(0).split(",");
@@ -113,16 +114,18 @@ public class DockerMonitorService {
                     String memoryUsage = stats[0].trim();
                     String cpuUsage = stats[1].trim();
                     // Create a JSON object with the stats
-                    Map<String, String> monitoringData = new HashMap<>();
-                    monitoringData.put("memoryUsage", memoryUsage);
-                    monitoringData.put("cpuUsage", cpuUsage);
+//                    Map<String, String> monitoringData = new HashMap<>();
+//                    monitoringData.put("memoryUsage", memoryUsage);
+//                    monitoringData.put("cpuUsage", cpuUsage);
+                    result.setCpuUsage(Float.valueOf(cpuUsage.replace("%", "")));
+                    result.setMemoryUsage(Float.valueOf(memoryUsage.replace("%", "")));
                     // Send the JSON object via WebSocket
-                    result = monitoringData.toString();
-                    messagingTemplate.convertAndSend("/topic/docker-stats", result);
+//                    result = monitoringData.toString();
+//                    messagingTemplate.convertAndSend("/topic/docker-stats", result);
 
                 } else {
-                    result ="Unexpected output format";
-                    messagingTemplate.convertAndSend("/topic/docker-stats", result);
+//                    result ="Unexpected output format";
+//                    messagingTemplate.convertAndSend("/topic/docker-stats", result);
                 }
             } else {
                 BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
@@ -130,7 +133,7 @@ public class DockerMonitorService {
                 while ((line = errorReader.readLine()) != null) {
                     errorMessage.append(line).append("\n");
                 }
-                result = "Command failed: " + errorMessage.toString();
+//                result = "Command failed: " + errorMessage.toString();
                 messagingTemplate.convertAndSend("/topic/docker-stats", result);
             }
 

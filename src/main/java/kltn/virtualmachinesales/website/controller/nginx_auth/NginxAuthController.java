@@ -3,8 +3,10 @@ package kltn.virtualmachinesales.website.controller.nginx_auth;
 import kltn.virtualmachinesales.website.dto.request.VirtualMachineDTO;
 import kltn.virtualmachinesales.website.entity.Machine;
 import kltn.virtualmachinesales.website.entity.PortContainerMapping;
+import kltn.virtualmachinesales.website.entity.user.User;
 import kltn.virtualmachinesales.website.repository.MachineRepository;
 import kltn.virtualmachinesales.website.repository.PortContainerMappingRepository;
+import kltn.virtualmachinesales.website.repository.UserRepository;
 import kltn.virtualmachinesales.website.request.AuthRequest;
 import kltn.virtualmachinesales.website.service.NginxService;
 import kltn.virtualmachinesales.website.service.implement.PortContainerMappingServiceImpl;
@@ -49,6 +51,8 @@ public class NginxAuthController {
     private PortContainerMappingRepository portContainerMappingRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/shop/change-auth")
     public String changeAuth(@RequestBody AuthRequest request ) {
@@ -100,6 +104,7 @@ public class NginxAuthController {
                 machine.setUserAuth(request.getUsername());
                 machine.setPassAuth(DigestUtils.sha256Hex(request.getPassword()).toUpperCase());
                 machineRepository.save(machine);
+                User user = userRepository.findById(machine.getUserId()).orElse(null);
                 PortContainerMapping portContainerMapping = new PortContainerMapping();
                 portContainerMapping.setRam(Float.valueOf(machine.getRam()));
                 portContainerMapping.setCpu(Float.valueOf(machine.getMemory()));
@@ -108,6 +113,7 @@ public class NginxAuthController {
                 portContainerMapping.setImgSrc("https://res.cloudinary.com/dlggnttqv/image/upload/v1726463019/machine_1_fgtptn.png");
                 portContainerMapping.setCreated(new Date());
                 portContainerMapping.setExpired(new Date());
+                portContainerMapping.setUsername(user.getUsername());
                 portContainerMappingServiceImpl.create(portContainerMapping);
                 output.append("container moi va port moi da duoc tao ").append("\n");
                 output.append("port using:"+ maxPort).append("\n");
