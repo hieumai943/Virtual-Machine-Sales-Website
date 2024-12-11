@@ -12,7 +12,7 @@ import java.util.List;
         @Query("SELECT m from Machine m WHERE m.name = :name")
         Machine getByName(String name);
 
-        @Query("SELECT m from Machine m order by m.id desc")
+        @Query("SELECT m from Machine m where m.userId = :userId order by m.id desc")
         List<Machine> findAllByUserId(Integer userId);
 
         @Query("SELECT m from Machine m WHERE m.isSample = true")

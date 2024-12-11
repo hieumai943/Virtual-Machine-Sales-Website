@@ -48,8 +48,8 @@ public class MachineController {
         return DefaultResponse.success("đã xóa thành công ", null);
     }
     @GetMapping("/shop/machine/list")
-    public ResponseEntity<DefaultListResponse<MachineDto>> getAllMachine(@RequestParam String username) {
-        List<MachineDto> machines = machineService.getAll( username);
+    public ResponseEntity<DefaultListResponse<MachineDto>> getAllMachine(@RequestParam Boolean isSampleStore,@RequestParam String username) {
+        List<MachineDto> machines = machineService.getAll( isSampleStore,username);
         return DefaultListResponse.success(machines, machines.stream().count());
     }
     @GetMapping("/shop/machine/port/{port}")

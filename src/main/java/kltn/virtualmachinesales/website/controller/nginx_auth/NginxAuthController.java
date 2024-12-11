@@ -107,7 +107,8 @@ public class NginxAuthController {
                 User user = userRepository.findById(machine.getUserId()).orElse(null);
                 PortContainerMapping portContainerMapping = new PortContainerMapping();
                 portContainerMapping.setRam(Float.valueOf(machine.getRam()));
-                portContainerMapping.setCpu(Float.valueOf(machine.getMemory()));
+                portContainerMapping.setCpu(Float.valueOf(machine.getCoreCpu()));
+                portContainerMapping.setMemory(Float.valueOf(machine.getMemory()));
                 portContainerMapping.setMachineId(request.getMachineId());
                 portContainerMapping.setPort(maxPort);
                 portContainerMapping.setImgSrc("https://res.cloudinary.com/dlggnttqv/image/upload/v1726463019/machine_1_fgtptn.png");

@@ -16,7 +16,7 @@ public interface MachineService {
     Machine getById(Integer id) ;
     MachineDTO createMachine(MachineDTO machineDTO);
     String auth(AuthRequest authRequest);
-    List<MachineDto> getAll(String username) ;
+    List<MachineDto> getAll(Boolean isSampleStore, String username) ;
     void deleteById(Integer id);
 //    Machine buyMachine(Integer id);
     MachineDTO testMachine(MachineDTO machineDTO);

@@ -484,7 +484,7 @@
     padding: 5px 0 !important;
   }
   #uploadfile{
-    width: 22vw;;
+    padding-right: 80px;
   }
   #menu_list li ul li ul {
     background: white;
@@ -936,7 +936,7 @@
 //   else{
 //     document.querySelector('#theme input[type="checkbox"]').checked = false;
 //   }
-  setInterval(testDocker, 100000);
+  setInterval(testDocker, 300000);
   gpuTrigger();
 
   document.getElementById('clearStorageButton').addEventListener('click', function() {
@@ -989,7 +989,7 @@
   setTimeout(() => {
     localStorage.removeItem('user_authen');
     window.location.href = '/connect.html'; // Redirect to login page
-  }, 72000000); // 5s
+  }, 60000); // 5s
   const socket = new SockJS('http://localhost:8082/ws');
   const stompClient = Stomp.over(socket);
 
@@ -1309,7 +1309,7 @@
 
       const data = await response.json();
       console.log(data.data.imgSrc)
-      localStorage.setItem('img', data.data.imgSrc)
+      localStorage.setItem('img', `url('${data.data.imgSrc}')`)
       document.body.style.backgroundImage = localStorage.getItem('img');
     } catch (error) {
     }

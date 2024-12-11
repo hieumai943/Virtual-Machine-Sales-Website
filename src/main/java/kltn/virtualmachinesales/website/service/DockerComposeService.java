@@ -48,7 +48,6 @@ public class DockerComposeService {
     }
     public String createUpdatedServiceResources(String cpuLimit, String memoryLimit, Integer maxPort, Integer machineId) {
         try {
-            String serviceName = "nginx" + maxPort ;
             String port = maxPort + ":9876";
             // Ensure the config/nginx folder exists
             Files.createDirectories(Paths.get(CONFIG_NGINX_FOLDER));
@@ -180,6 +179,41 @@ public class DockerComposeService {
             output.append("Error executing command: ").append(e.getMessage());
         }
 
+        return output.toString();
+    }
+
+    public String restartContainer(String containerName){
+        StringBuilder output = new StringBuilder();
+        List<String> commands = List.of(
+//                "cd /home/hieunm369/Documents/'Virtual machine'/website/config/nginx",
+                "echo '"+ passwordUbuntu +"' | sudo -S docker start " + containerName
+        );
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+                processBuilder.command("cmd.exe", "/c", String.join(" && ", commands));
+            } else {
+                processBuilder.command("bash", "-c", String.join(" && ", commands));
+            }
+            Process process = processBuilder.start();
+            // Đọc output tiêu chuẩn
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append("stdout: ").append(line).append("\n");
+            }
+
+            // Đọc lỗi tiêu chuẩn
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            while ((line = errorReader.readLine()) != null) {
+                output.append("stderr: ").append(line).append("\n");
+            }
+
+            int exitCode = process.waitFor();
+            output.append("\nExited with error code : ").append(exitCode);
+        } catch (Exception e) {
+            output.append("Error executing command: ").append(e.getMessage());
+        }
         return output.toString();
     }
 

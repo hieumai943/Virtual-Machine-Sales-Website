@@ -89,11 +89,18 @@ public class MachineServiceImpl implements MachineService {
         return null;
     }
 
-    public List<MachineDto> getAll(String username){
+    public List<MachineDto> getAll(Boolean isSampleStore, String username){
         User user = userRepository.findByUsername(username);
         List<Machine> machines = machineRepository.findAllByUserId(user.getId());
         List<Machine> sampleMachines = machineRepository.findAlllSample();
-        machines.addAll(sampleMachines);
+        if(isSampleStore){
+            for(Machine sampleMachine : sampleMachines){
+                if(!machines.contains(sampleMachine)){
+                    machines.add(sampleMachine);
+                }
+            }
+        }
+
         List<MachineDto> machineDtos = new ArrayList<>();
         for (Machine machine : machines) {
             List<Integer> portContainerMapping = portContainerMappingRepository.findPortByMachineId(machine.getId());
@@ -109,6 +116,9 @@ public class MachineServiceImpl implements MachineService {
             machineDto.setOldPrice(machine.getOldPrice());
             machineDto.setNewPrice(machine.getNewPrice());
             machineDto.setImgSrc(machine.getImgSrc());
+            if(isSampleStore){
+                machineDto.setImgSrc("https://res.cloudinary.com/dlggnttqv/image/upload/v1733872539/bgr_hdegf1.jpg");
+            }
             machineDto.setStatus(machine.getStatus());
             machineDto.setUserId(machine.getUserId());
             if(CollectionUtils.isEmpty(portContainerMapping)){
